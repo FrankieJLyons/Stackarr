@@ -10,9 +10,12 @@ from stackarr.first_run_server import ReadinessServer
 
 
 @pytest.fixture
-def running():
+def running(tmp_path):
+    from stackarr.first_run_docker import DockerSetup
+
     calls = []
     with ReadinessServer(lambda mode: calls.append(mode) or {"state": "ready", "mode": mode}) as server:
+        server.docker_setup = DockerSetup(root=tmp_path / "prerequisites")
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:

@@ -52,6 +52,7 @@ def main():
             assert pairing.approve(pairing.display_code())
             page.get_by_label("Create a password", exact=True).fill("synthetic quality test password")
             page.get_by_role("button", name="Continue to setup").click()
+            page.get_by_role("button", name="Review app choices", exact=True).click()
             page.get_by_role("button", name="Movies & TV · recommended", exact=True).click()
             page.get_by_role("button", name="Save & continue").click()
             expect(page.get_by_label("Movies request quality", exact=True)).to_have_value("HD-1080p")
@@ -76,6 +77,7 @@ def main():
             assert saved["choices"]["sonarr"]["quality_profile"] == "SD"
             page.reload()
             resume_setup(page)
+            page.get_by_role("button", name="Review app choices", exact=True).click()
             page.get_by_role("button", name="Back", exact=True).click()
             expect(page.get_by_label("Movies request quality", exact=True)).to_have_value("Ultra-HD")
             expect(page.get_by_label("TV request quality", exact=True)).to_have_value("other")

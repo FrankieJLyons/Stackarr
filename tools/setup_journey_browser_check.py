@@ -26,7 +26,6 @@ from stackarr import onboarding, setup_readiness
 from stackarr.config import APP_IDS, CATALOG, Config
 from stackarr.pairing import PairingGate
 from stackarr.server import create_app
-from tools.browser_check import resume_setup
 
 REQUEST_APPS = {"plex", "seerr", "sonarr", "radarr", "prowlarr", "qbittorrent"}
 PASSWORD = "synthetic journey browser password"
@@ -151,7 +150,7 @@ class Fixture:
         allowed_mutations = {"/api/setup", "/api/login", "/api/logout", "/api/launcher/pair", "/api/onboarding",
                              "/api/onboarding/check-ports", "/api/onboarding/suggest-ports",
                              "/api/onboarding/runtime-check", "/api/deployments/review", "/api/indexers/validate"}
-        allowed_reads = {"/api/session", "/api/config", "/api/status", "/api/deployments", "/api/onboarding", "/api/home",
+        allowed_reads = {"/api/appearance", "/api/native-imports", "/api/overview/storage", "/api/library-mapping", "/api/session", "/api/config", "/api/status", "/api/deployments", "/api/onboarding", "/api/home",
                          "/api/onboarding/readiness", "/api/onboarding/storage", "/api/onboarding/folders",
                          "/api/onboarding/plan", "/api/indexers/status", "/api/wiring/preview", "/api/indexers/catalog"}
 
@@ -166,14 +165,21 @@ class Fixture:
 
 def open_setup(page, origin):
     page.goto(origin)
-    page.wait_for_function("() => document.querySelector('#setup-journey-panel') || document.querySelector('button[data-view=setup]')")
-    if not page.locator('#setup-journey-panel').is_visible():
-        resume_setup(page)
-    expect(page.locator("#setup-journey-panel")).to_be_visible()
+    page.wait_for_function("() => document.querySelector('button[data-view=setup]')")
+    page.locator('button[data-view="setup"]').click()
+    expect(page.locator('.setup-roadmap')).to_be_visible()
+
+
+def current_action(page):
+    identity = page.evaluate("setupDeployment.journey.next_action.checkpoint_id")
+    return page.locator('[data-setup-checkpoint="' + identity + '"]')
 
 
 def next_action(page, text):
-    expect(page.locator("#setup-journey-next")).to_have_text(text)
+    # A planning workspace keeps the checklist one explicit navigation away.
+    if page.locator('[data-setup-task=""]').count():
+        page.locator('[data-setup-task=""]').first.click()
+    expect(current_action(page)).to_have_text(text)
 
 
 def main():
@@ -244,6 +250,7 @@ def main():
                     assert pairing.approve(pairing.display_code())
                     page.get_by_label("Create a password", exact=True).fill(PASSWORD)
                     page.get_by_role("button", name="Continue to setup").click()
+                    page.get_by_role("button", name="Review app choices", exact=True).click()
                     page.get_by_role("button", name="Movies & TV · recommended", exact=True).click()
                     assert set(page.locator('[id^="setup-"][type="checkbox"]:checked').evaluate_all(
                         "nodes => nodes.map(node => node.id.slice(6)).filter(key => key !== 'auto-ports')")) == REQUEST_APPS
@@ -275,11 +282,11 @@ def main():
                     open_setup(page, origin)
                     assert onboarding.read(fixture.store) == saved
                     next_action(page, "Check Docker")
-                    page.locator("#setup-journey-next").click()
+                    current_action(page).click()
                     expect(page.locator("#setup-apps")).to_be_visible()
                     next_action(page, "Review installation")
                     assert onboarding.read(fixture.store)["draft"]["step"] == 0
-                    page.locator("#setup-journey-next").click()
+                    current_action(page).click()
                     expect(page.get_by_role("button", name="Download & install these apps", exact=True)).to_be_visible()
                     assert onboarding.read(fixture.store)["draft"]["step"] == 2
                     assert not any(app.enabled for app in fixture.store.config()[1].integrations.values())
@@ -296,6 +303,7 @@ def main():
                     fixture.configure([])
                     fixture.save_draft([], step=0, media=False)
                     open_setup(page, origin)
+                    page.get_by_role("button", name="Review app choices", exact=True).click()
                     page.get_by_role("button", name="Monitoring only", exact=True).click()
                     page.get_by_role("button", name="Save & continue").click()
                     expect(page.get_by_role("heading", name="No media folder needed", exact=True)).to_be_visible()
@@ -315,6 +323,7 @@ def main():
                     fixture.save_draft(["plex", "seerr"], step=0, media=False, choices={
                         "plex": {"mode": "connect", "url": "http://plex.synthetic.invalid"}, "seerr": {"mode": "install"}})
                     open_setup(page, origin)
+                    page.get_by_role("button", name="Review app choices", exact=True).click()
                     page.get_by_role("button", name="Save & continue").click()
                     expect(page.get_by_role("heading", name="No media folder needed", exact=True)).to_be_visible()
                     page.get_by_role("button", name="Save & continue").click()
@@ -330,19 +339,19 @@ def main():
                     fixture.save_draft(sorted(REQUEST_APPS))
                     open_setup(page, origin)
                     next_action(page, "Choose content sources")
-                    page.locator("#setup-journey-next").click()
-                    expect(page.locator("#indexer-setup")).to_be_focused()
+                    current_action(page).click()
+                    expect(page.locator("#indexer-setup")).to_be_visible()
                     expect(page.get_by_text("No guided provider forms are available from this Prowlarr version.", exact=False)).to_be_visible()
                     page.locator("#indexers-check").click()
                     next_action(page, "Review app connections")
                     assert fixture.source_checks == 1
-                    page.locator("#setup-journey-next").click()
+                    current_action(page).click()
                     expect(page.get_by_text("No new connection changes are ready. Check any notices below.", exact=True)).to_be_visible()
                     next_action(page, "Test a movie search")
                     assert fixture.wiring_checks == 1
                     for media_type, label in (("movie", "Test a movie search"), ("tv", "Test a TV search")):
                         next_action(page, label)
-                        page.locator("#setup-journey-next").click()
+                        current_action(page).click()
                         expect(page.locator("#indexer-validation-query")).to_be_focused()
                         expect(page.locator("#indexer-validation-type")).to_have_value(media_type)
                         page.locator("#indexer-validation-query").fill("Synthetic permitted sample")
@@ -353,9 +362,9 @@ def main():
                     journey = fixture.snapshot()["journey"]
                     assert next(row for row in journey["checkpoints"] if row["id"] == "connections")["state"] == "done"
                     assert journey["ready_to_watch"] is False and journey["ready_to_request"] is False
-                    page.locator("#setup-journey-next").click()
-                    expect(page.locator("#setup-verification")).to_be_focused()
-                    page.locator("#setup-journey-checklist > summary").click()
+                    current_action(page).click()
+                    expect(page.locator("#setup-verification")).to_be_visible()
+                    expect(page.locator(".setup-roadmap")).to_be_visible()
                     page.screenshot(path=str(output / "journey-request-checklist.png"), full_page=True)
                     saved = onboarding.read(fixture.store)
                     open_setup(page, origin)
@@ -369,9 +378,9 @@ def main():
                     open_setup(page, origin)
                     next_action(page, "See what still needs verification")
                     assert page.locator("#setup-verification").count() == 0
-                    page.locator("#setup-journey-next").click()
-                    expect(page.locator("#setup-verification")).to_be_focused()
-                    assert onboarding.read(fixture.store)["draft"]["step"] == 2
+                    current_action(page).click()
+                    expect(page.locator("#setup-verification")).to_be_visible()
+                    assert onboarding.read(fixture.store)["draft"]["step"] == 0
                     assert page.locator('#setup-verification a[href*="seerr"]').count() == 0
                     expect(page.locator("#setup-verification")).not_to_contain_text("request")
                     expect(page.locator("#setup-verification")).not_to_contain_text("imported")
@@ -383,8 +392,8 @@ def main():
                         "seerr": {"mode": "connect", "url": "http://seerr.synthetic.invalid"}})
                     open_setup(page, origin)
                     next_action(page, "See what still needs verification")
-                    page.locator("#setup-journey-next").click()
-                    expect(page.locator("#setup-verification")).to_be_focused()
+                    current_action(page).click()
+                    expect(page.locator("#setup-verification")).to_be_visible()
                     expect(page.locator('#setup-verification button[data-view="home"]')).to_be_visible()
                     expect(page.locator('#setup-verification button[data-view="requests"]')).to_be_visible()
                     assert page.locator('#setup-verification a[href*="plex"]').count() == 0
@@ -397,8 +406,8 @@ def main():
                     fixture.save_draft(["plex"], step=1)
                     open_setup(page, origin)
                     next_action(page, "Reconnect the installation computer")
-                    page.locator("#setup-journey-next").click()
-                    expect(page.locator("#setup-reconnect")).to_be_focused()
+                    current_action(page).click()
+                    expect(page.locator("#setup-reconnect")).to_be_visible()
                     page.get_by_role("button", name="Check installation connection", exact=True).click()
                     expect(page.locator("#setup-reconnect")).to_be_visible()
                     next_action(page, "Reconnect the installation computer")

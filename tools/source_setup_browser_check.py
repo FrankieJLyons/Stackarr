@@ -96,6 +96,7 @@ def run(output):
             page.add_style_tag(path=str(ROOT / "stackarr/static/theme.css"))
             page.add_style_tag(path=str(ROOT / "stackarr/static/app.css"))
             page.add_script_tag(content=FIXTURE)
+            page.add_script_tag(path=str(ROOT / "stackarr/static/browser_links.js"))
             page.add_script_tag(path=str(ROOT / "stackarr/static/setup_extras.js"))
             page.evaluate("fixture.render()")
             expect(page.get_by_role("heading", name="Where will your media come from?")).to_be_visible()

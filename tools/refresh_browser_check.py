@@ -35,6 +35,7 @@ def main():
                 var setupDeployment = {available: false, operations: [], actions: []};
                 var bindSetup = () => {}, bindAccountSetup = () => {}, bindSetupExtras = () => {};
                 var bindBackupPlan = () => {}, bindStackarrUpdates = () => {};
+                var bindPresets = () => {}, bindCleanupPresets = () => {};
                 var bindNativeImports = () => {}, bindQualityRules = () => {}, bindMediaSetup = () => {};
                 var helpPanel = () => '';
                 var backupSchedulePanel = () => '<section class="panel"><input id="backup-folder" value="saved"><div id="backup-result"></div><button id="backup-review">Review backup</button></section>';

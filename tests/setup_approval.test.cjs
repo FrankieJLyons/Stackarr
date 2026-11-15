@@ -9,7 +9,7 @@ function fixture(session) {
   const message = {textContent: ''};
   const password = {value: 'disposable fixture password'};
   const form = {isConnected: true, dataset: {}, querySelector(selector) {
-    return {'button': button, '#auth-error': message, '#password': password}[selector];
+    return {'button[type=submit]': button, '#auth-error': message, '#password': password}[selector];
   }};
   const callbacks = [];
   let calls = 0;

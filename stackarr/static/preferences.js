@@ -89,6 +89,12 @@ async function openSetupCheckpoint(row){
  state.appReconnect=['plex','seerr'].includes(action.app)?action.app:null;
  state.setupTask=['accounts','finish-connecting'].includes(action.id)?'accounts':['source-setup','source-validation','source-check'].includes(action.id)?'sources':action.id==='wiring-preview'?'connections':action.id==='companion-review'?'companions':action.id==='verification'?'verification':action.id==='reconnect-installation'?'reconnect':'progress';
  render();focusSetupTarget(document.getElementById('setup-task-workspace'));
+ if(action.id==='source-validation'){
+  const type=document.getElementById('indexer-validation-type');
+  if(type&&action.media_type)type.value=action.media_type;
+  focusSetupTarget(document.getElementById('indexer-validation-query'));
+  return;
+ }
  let target;
  if(action.id==='source-setup')target=document.getElementById('indexer-load-providers');
  if(['wiring-preview','source-check'].includes(action.id))target=document.getElementById(action.target);

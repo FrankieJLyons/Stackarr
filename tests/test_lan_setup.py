@@ -1,5 +1,6 @@
 import base64
 import copy
+import os
 import threading
 import time
 from datetime import datetime, timedelta, timezone
@@ -50,19 +51,21 @@ def setup(tmp_path, monkeypatch):
             write(folder / "job.json", {"id": identity, "action": review["action"], "phase": "succeeded", "message": "Checked settings preserved."})
             return {"id": identity}
 
+    binary = "caddy.exe" if os.name == "nt" else "caddy"
+
     def prepare(root, request, executable):
         root.mkdir()
-        (root / "caddy.exe").write_bytes(b"synthetic executable; never run")
+        (root / binary).write_bytes(b"synthetic executable; never run")
         (root / "Caddyfile").write_text(gateway_config(**{k:v for k,v in request.items() if k != "state_root"}), encoding="utf-8")
         manifest = {"schema": 1, "request": request, "network": {"origin": request["origin"], "links": {}},
-                    "files": {name:digest(root / name) for name in ("caddy.exe", "Caddyfile")}}
+                    "files": {name:digest(root / name) for name in (binary, "Caddyfile")}}
         write(root / "gateway.json", manifest)
         certificate(root / "private/root.crt")
         return manifest
 
     monkeypatch.setattr("stackarr.lan_setup.checked_caddy", lambda p: p)
     monkeypatch.setattr("stackarr.lan_setup.prepare", prepare)
-    service = LanSetup(state, tmp_path / "network", tmp_path / "caddy.exe", network_reader=lambda: [], updates_factory=lambda _: Updates())
+    service = LanSetup(state, tmp_path / "network", tmp_path / binary, network_reader=lambda: [], updates_factory=lambda _: Updates())
     service.calls = calls
     return service
 
@@ -71,7 +74,7 @@ def prepared(setup):
     return setup.prepare({"address": "172.20.50.10", "clients": "172.20.50.0/24", "port": 29443})
 
 
-@pytest.mark.parametrize("hostname", ["frankies-pc", "media-server.local", "media.home.arpa"])
+@pytest.mark.parametrize("hostname", ["example-pc", "media-server.local", "media.home.arpa"])
 def test_optional_local_name_keeps_private_bind_and_certificate_identity(setup, hostname):
     values = {"address": "172.20.50.10", "clients": "172.20.50.0/24", "port": 29443, "hostname": hostname}
     status = setup.prepare(values)

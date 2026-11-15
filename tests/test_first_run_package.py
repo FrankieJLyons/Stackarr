@@ -18,6 +18,7 @@ def make(tmp_path, runner):
     return PackageStart(tmp_path / "package", tmp_path / "docker", tmp_path / "connect", runner=runner)
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows packaged process commands")
 def test_home_network_launcher_only_uses_saved_state_and_verified_package(tmp_path, monkeypatch):
     start = make(tmp_path, None)
     launched, verified = [], []

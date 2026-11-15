@@ -9,7 +9,7 @@ async function checkSetupApproval(form){
  if(!form.isConnected)return false;
  if(!session.setup_required){await boot();return false;}
  launcherApproved=!!session.setup_approved;
- const button=form.querySelector('button'),message=form.querySelector('#auth-error');
+ const button=form.querySelector('button[type=submit]'),message=form.querySelector('#auth-error');
  if(!launcherApproved){button.disabled=true;message.textContent=setupApprovalExpired;}
  else if(message.textContent===setupApprovalExpired){
   button.disabled=form.dataset.submitting==='true';
@@ -57,10 +57,13 @@ function captureSetupInvitation(){
 }
 captureSetupInvitation();
 window.addEventListener('hashchange',()=>{captureSetupInvitation();if(setupInvitation)boot();});
+let setupHandoffPromise;
 async function receiveSetupHandoff(){
- if(!setupInvitation)return;
- const ticket=setupInvitation;setupInvitation=null;
- await api('setup/handoff','POST',{ticket});
+ if(setupInvitation&&!setupHandoffPromise){
+  const ticket=setupInvitation;setupInvitation=null;
+  setupHandoffPromise=api('setup/handoff','POST',{ticket}).finally(()=>{setupHandoffPromise=null;});
+ }
+ if(setupHandoffPromise)await setupHandoffPromise;
 }
 function dockerWelcome(){
  root.innerHTML='<main class="auth-form" id="main"><section>'+brand()+'<h1>Welcome to Stackarr.</h1><p>Open <strong>Start Stackarr</strong> from your download on the computer running Stackarr. It opens a private setup page automatically, where you can choose your password.</p><p>If someone else installed Stackarr for you, ask them to open setup on that computer.</p><p>You do not need to find or copy a security code.</p><button id="check-setup">Check again</button></section></main>';
