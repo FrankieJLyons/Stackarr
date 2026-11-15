@@ -47,6 +47,8 @@ def open_server(page):
 def open_task_group(page, name):
     if page.locator('.control-tabs').count():
         page.locator('button[data-view="setup"]').click()
+        if page.locator('[data-setup-task=""]').count():
+            page.locator('[data-setup-task=""]').first.click()
         page.locator('.setup-tool-picker > summary').click()
         page.locator('.setup-tool-picker [data-setup-task="' + name + '"]').click()
         return
