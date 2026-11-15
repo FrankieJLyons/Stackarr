@@ -75,6 +75,7 @@ def main():
             assert pairing.approve(pairing.display_code())
             page.get_by_label("Create a password", exact=True).fill("synthetic installation test password")
             page.get_by_role("button", name="Continue to setup").click()
+            page.get_by_role("button", name="Review app choices", exact=True).click()
             page.get_by_role('button', name='Choose my own', exact=True).click()
             page.get_by_text('Advanced port settings', exact=True).click()
             page.get_by_label("Port selection", exact=True).select_option("custom")
@@ -108,11 +109,10 @@ def main():
             assert app.state.deployments.rows()[0]["state"] == "needs-setup", app.state.deployments.rows()
             page.reload()
             resume_setup(page)
+            page.get_by_role("button", name="Review app choices", exact=True).click()
             page.get_by_role("heading", name="Apps installed — finish setup", exact=True).wait_for()
             if "Seerr" in ports:
                 open_task_group(page, 'accounts')
-                if args.plex:
-                    page.get_by_text('Manual app connection checks', exact=True).click()
                 page.get_by_role("button", name="Finish connecting", exact=True).click()
                 expect(page.locator('section').filter(has=page.get_by_role("heading", name="Finish connecting your apps")).locator('[role="status"]')).to_contain_text("complete its account setup", timeout=30000)
             else:
@@ -171,7 +171,8 @@ def main():
                 page.get_by_role("button", name="Preview app connections", exact=True).click()
                 expect(page.locator("#wiring-output")).to_contain_text("No new connection changes are ready. Check any notices below.", timeout=60000)
                 page.screenshot(path=str(root / "connections.png"), full_page=True)
-            page.get_by_role("button", name="Apps", exact=True).click()
+            page.locator('button[data-view="settings"]').click()
+            page.locator('button[data-settings-section="maintenance"]').click()
             page.get_by_role("button", name="Check installation 1", exact=True).click()
             expect(page.locator('[id^="install-check-"]')).to_contain_text("Read-only check", timeout=60000)
             check_rows = page.locator('[id^="install-check-"] li')

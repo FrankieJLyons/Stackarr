@@ -176,6 +176,7 @@ def current_action(page):
 
 
 def next_action(page, text):
+    page.wait_for_function("label => setupDeployment.journey?.next_action?.label === label", arg=text)
     # A planning workspace keeps the checklist one explicit navigation away.
     if page.locator('[data-setup-task=""]').count():
         page.locator('[data-setup-task=""]').first.click()

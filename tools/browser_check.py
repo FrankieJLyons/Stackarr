@@ -45,6 +45,11 @@ def open_server(page):
 
 
 def open_task_group(page, name):
+    if page.locator('.control-tabs').count():
+        page.locator('button[data-view="setup"]').click()
+        page.locator('.setup-tool-picker > summary').click()
+        page.locator('.setup-tool-picker [data-setup-task="' + name + '"]').click()
+        return
     group = page.locator('#setup-group-' + name)
     group.wait_for(state='attached')
     if not group.evaluate('element => element.open'):
