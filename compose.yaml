@@ -1,0 +1,30 @@
+name: stackarr
+services:
+  stackarr:
+    build: .
+    image: stackarr:local
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "${STACKARR_BIND:-127.0.0.1}:${STACKARR_PORT:-28000}:8787"
+    environment:
+      STACKARR_ORIGIN: "${STACKARR_ORIGIN:-http://localhost:${STACKARR_PORT:-28000}}"
+      STACKARR_CONTROLLER_SHARED: /run/stackarr-controller
+    volumes:
+      - stackarr-data:/var/lib/stackarr
+      - type: bind
+        source: ${STACKARR_CONTROLLER_SHARED_HOST:-./.controller/shared}
+        target: /run/stackarr-controller
+        read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    networks: [control]
+    stop_grace_period: 20s
+networks:
+  control:
+    name: stackarr-control
+volumes:
+  stackarr-data:

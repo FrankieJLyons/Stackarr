@@ -1,0 +1,7 @@
+*
+!pyproject.toml
+!LICENSE
+!requirements.lock
+!stackarr/
+!stackarr/**
+stackarr/**/__pycache__/

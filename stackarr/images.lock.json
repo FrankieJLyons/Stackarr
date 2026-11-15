@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "verified_on": "2026-10-19",
+  "platform": "linux/amd64",
+  "images": {
+    "plex": "plexinc/pms-docker@sha256:dbb879bf58c3fc56635f21ac48c32aa6853aaa23d4a57b102033b6dc6d2d9cee",
+    "sonarr": "lscr.io/linuxserver/sonarr@sha256:f247545d23ba8b233d6604575347e48a623fe6ad75dda02348bf81917f3b5c06",
+    "radarr": "lscr.io/linuxserver/radarr@sha256:adb6c09d6b729ea5e642c99cea35af72702ef476bf4763f153299ac5db9f0b4f",
+    "prowlarr": "lscr.io/linuxserver/prowlarr@sha256:f2b26429893d4c4cb71941b7ee50b1bdecd9d5f9f9e02d5410615e9f4f7c8d95",
+    "qbittorrent": "lscr.io/linuxserver/qbittorrent@sha256:b522f9f4b769f8f36d49d22d5eb6a92e9aa18904c6a1830b1439df511ec21983",
+    "seerr": "stackarr-seerr@sha256:3d0ddfab2de853a31d289316297bf6760e59d5fda4cd3046fd93b6c5dd8da531",
+    "tautulli": "ghcr.io/tautulli/tautulli@sha256:7a7de616c6e62e5bcdb74325a20f9e6c9744b5d737a98d078ba1450abd068b1f",
+    "kuma": "louislam/uptime-kuma@sha256:c6f131fa8c42d9b2d15e24a9a8fd931364ebb2d7f4ff078964d57128cddaf161",
+    "cleanuparr": "ghcr.io/cleanuparr/cleanuparr@sha256:2cafbd3d7a5127c22f830b0c4ea321303a9da642991707085d4a5a85e5ef021b"
+  },
+  "plex_distribution": {
+    "version": "1.43.4.10903-e5521bd8c",
+    "type": "prepackaged",
+    "reviewed_on": "2026-10-06",
+    "reason": "Avoid public/beta startup downloads; server binary is included in the pinned image."
+  },
+  "companion_review": {
+    "reviewed_on": "2026-10-17",
+    "kuma": "2.5.6 slim; SQLite on a named local volume",
+    "cleanuparr": "2.10.11; safe setup keeps dry-run on and automatic jobs off",
+    "tautulli_revision": "9484667bc1f2d159368a999320b8f495bbfbd00a"
+  }
+}

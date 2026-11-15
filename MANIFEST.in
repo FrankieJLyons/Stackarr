@@ -1,0 +1,14 @@
+include README.md
+include requirements.lock
+include Dockerfile
+include compose.yaml
+include .env.example
+recursive-include platform *
+recursive-include docs *.md
+recursive-include stackarr/static *
+include stackarr/images.lock.json
+prune legacy
+prune outputs
+exclude docs/history-audit.json
+prune .runtime
+prune tests

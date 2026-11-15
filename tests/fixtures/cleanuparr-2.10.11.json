@@ -1,0 +1,167 @@
+{
+  "general": {
+    "displaySupportBanner": true,
+    "dryRun": true,
+    "httpMaxRetries": 0,
+    "httpTimeout": 100,
+    "httpCertificateValidation": "Enabled",
+    "httpSendUserAgent": false,
+    "statusCheckEnabled": false,
+    "ignoredDownloads": [],
+    "connectivityCheckEnabled": false,
+    "connectivityCheckUrls": [],
+    "strikeInactivityWindowHours": 24,
+    "historyRetentionDays": 365,
+    "log": {
+      "level": "Information",
+      "rollingSizeMB": 10,
+      "retainedFileCount": 5,
+      "timeLimitHours": 24,
+      "archiveEnabled": true,
+      "archiveRetainedCount": 60,
+      "archiveTimeLimitHours": 720
+    },
+    "auth": {
+      "disableAuthForLocalAddresses": false,
+      "trustForwardedHeaders": false,
+      "trustedNetworks": []
+    }
+  },
+  "queue_cleaner": {
+    "enabled": false,
+    "cronExpression": "0 0/5 * * * ?",
+    "useAdvancedScheduling": false,
+    "failedImport": {
+      "maxStrikes": 0,
+      "ignorePrivate": false,
+      "deletePrivate": false,
+      "skipIfNotFoundInClient": true,
+      "patterns": [],
+      "patternMode": "Include",
+      "changeCategory": false,
+      "forceImport": false,
+      "forceImportMaxTries": 3
+    },
+    "ignoredDownloads": [],
+    "processNoContentId": false,
+    "downloadingMetadataMaxStrikes": 0,
+    "errored": {
+      "maxStrikes": 0,
+      "ignorePrivate": false,
+      "deletePrivate": false,
+      "changeCategory": false
+    }
+  },
+  "download_cleaner": {
+    "enabled": false,
+    "cronExpression": "0 0 * * * ?",
+    "useAdvancedScheduling": false,
+    "ignoredDownloads": [],
+    "clients": []
+  },
+  "malware_blocker": {
+    "enabled": false,
+    "cronExpression": "0/5 * * * * ?",
+    "useAdvancedScheduling": false,
+    "ignorePrivate": false,
+    "deletePrivate": false,
+    "processNoContentId": false,
+    "deleteIfAnyFileBlocked": false,
+    "sonarr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "radarr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "lidarr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "readarr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "whisparr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "sportarr": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "lazyLibrarian": {
+      "enabled": false,
+      "blocklistType": "Blacklist",
+      "blocklistPath": null
+    },
+    "ignoredDownloads": []
+  },
+  "seeker": {
+    "searchEnabled": false,
+    "searchInterval": 10,
+    "proactiveSearchEnabled": false,
+    "selectionStrategy": "BalancedWeighted",
+    "useRoundRobin": true,
+    "postReleaseGraceHours": 6,
+    "instances": []
+  },
+  "blacklist_sync": {
+    "enabled": false,
+    "cronExpression": "0 0 * * * ?",
+    "blacklistPath": null
+  },
+  "arr_sonarr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Sonarr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_radarr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Radarr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_lidarr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Lidarr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_readarr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Readarr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_whisparr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Whisparr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_sportarr": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "Sportarr",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "arr_lazylibrarian": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "type": "LazyLibrarian",
+    "failedImportMaxStrikes": -1,
+    "instances": []
+  },
+  "stall": [],
+  "slow": [],
+  "clients": [],
+  "version": "2.10.11.0"
+}

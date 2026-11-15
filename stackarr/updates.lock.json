@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-20",
+  "platform": "linux/amd64",
+  "apps": {
+    "plex": {
+      "image": "plexinc/pms-docker@sha256:dbb879bf58c3fc56635f21ac48c32aa6853aaa23d4a57b102033b6dc6d2d9cee",
+      "version": "1.43.4.10903-e5521bd8c"
+    },
+    "sonarr": {
+      "image": "lscr.io/linuxserver/sonarr@sha256:aae7c64ef13a4055c5b00607d5f2a2997d5a03304eb96e1930f9665728192e75",
+      "version": "4.0.20.3014-ls329"
+    },
+    "radarr": {
+      "image": "lscr.io/linuxserver/radarr@sha256:cc4742e5296c7fbb960839149f1fd07b78da8bdf296041c5c81b7f9c87ecb650",
+      "version": "6.4.4.10685-ls321"
+    },
+    "prowlarr": {
+      "image": "lscr.io/linuxserver/prowlarr@sha256:20bc5fdf919b4f86f9ab9b46d0f51a3b5d3fa83108819a0e4bbbc7bc2fee11cf",
+      "version": "2.6.5.5623-ls163"
+    },
+    "qbittorrent": {
+      "image": "lscr.io/linuxserver/qbittorrent@sha256:07bf154bd7d0d2450d4c4f9c2e7ca1d61566a4963b7aeb44475497935dec14f3",
+      "version": "5.2.4_v2.0.15-ls480"
+    },
+    "seerr": {
+      "image": "stackarr-seerr@sha256:3d0ddfab2de853a31d289316297bf6760e59d5fda4cd3046fd93b6c5dd8da531",
+      "version": "3.5.0-stackarr.2"
+    },
+    "tautulli": {
+      "image": "ghcr.io/tautulli/tautulli@sha256:7a7de616c6e62e5bcdb74325a20f9e6c9744b5d737a98d078ba1450abd068b1f",
+      "version": "v2.18.2",
+      "image_version": "master",
+      "image_revision": "9484667bc1f2d159368a999320b8f495bbfbd00a"
+    },
+    "kuma": {
+      "image": "louislam/uptime-kuma@sha256:c6f131fa8c42d9b2d15e24a9a8fd931364ebb2d7f4ff078964d57128cddaf161",
+      "version": "2.5.6",
+      "image_version": ""
+    },
+    "cleanuparr": {
+      "image": "ghcr.io/cleanuparr/cleanuparr@sha256:2cafbd3d7a5127c22f830b0c4ea321303a9da642991707085d4a5a85e5ef021b",
+      "version": "2.10.11"
+    }
+  }
+}

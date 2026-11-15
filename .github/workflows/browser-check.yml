@@ -1,0 +1,71 @@
+name: Browser checks
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    name: ${{ matrix.scenario }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scenario: core
+            tool: browser_check
+            args: ''
+          - scenario: docker-setup
+            tool: browser_check
+            args: --docker-setup
+          - scenario: quality-setup
+            tool: quality_setup_browser_check
+            args: --output test-results/quality-setup
+          - scenario: refresh-context
+            tool: refresh_browser_check
+            args: --output test-results/refresh-context
+          - scenario: setup-journey
+            tool: setup_journey_browser_check
+            args: --output test-results/setup-journey
+          - scenario: source-setup
+            tool: source_setup_browser_check
+            args: --output test-results/source-setup
+          - scenario: control-room
+            tool: control_room_browser_check
+            args: --output test-results/control-room
+          - scenario: recommended-presets
+            tool: presets_browser_check
+            args: --output test-results/recommended-presets
+          - scenario: cleanup-presets
+            tool: cleanup_presets_browser_check
+            args: --output test-results/cleanup-presets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.lock playwright==1.63.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m tools.${{ matrix.tool }} ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-browser-evidence-${{ matrix.scenario }}
+          path: |
+            test-results/*.png
+            test-results/browser-report.json
+            test-results/quality-setup/*.png
+            test-results/quality-setup/report.json
+            test-results/refresh-context/*.png
+            test-results/refresh-context/report.json
+            test-results/setup-journey/*.png
+            test-results/setup-journey/report.json
+            test-results/source-setup/*.png
+            test-results/source-setup/report.json
+            test-results/control-room/*.png
+            test-results/control-room/report.json
+            test-results/recommended-presets/*.png
+            test-results/recommended-presets/report.json
+            test-results/cleanup-presets/*.png
+            test-results/cleanup-presets/report.json
+          retention-days: 7

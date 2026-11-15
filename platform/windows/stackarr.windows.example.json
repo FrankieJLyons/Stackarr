@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "runtimeRoot": "C:\\ProgramData\\Stackarr\\Runtime",
+  "releaseRoot": "C:\\ProgramData\\Stackarr\\Releases",
+  "dashboardRoot": "",
+  "gateway": {
+    "enabled": false,
+    "caddyExecutable": "",
+    "hostname": "",
+    "listenPort": 443,
+    "taskName": "Stackarr - HTTPS Gateway"
+  },
+  "storageGuard": {
+    "enabled": false,
+    "path": "",
+    "pauseBelowGb": 50,
+    "resumeAtGb": 100,
+    "categories": ["sonarr", "radarr"]
+  },
+  "backups": {
+    "enabled": false,
+    "retentionDays": 7,
+    "target": ""
+  },
+  "managedTasks": []
+}

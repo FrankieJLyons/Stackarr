@@ -1,0 +1,8 @@
+{
+  "seerr": {
+    "image": "stackarr-seerr@sha256:3d0ddfab2de853a31d289316297bf6760e59d5fda4cd3046fd93b6c5dd8da531",
+    "version": "3.5.0-stackarr.2",
+    "patch": "manage-users-1",
+    "setup_patch": "plex-setup-1"
+  }
+}

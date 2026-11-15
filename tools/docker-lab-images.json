@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "verified_on": "2026-10-06",
+  "platform": "linux/amd64",
+  "images": {
+    "plex": "plexinc/pms-docker@sha256:dbb879bf58c3fc56635f21ac48c32aa6853aaa23d4a57b102033b6dc6d2d9cee",
+    "sonarr": "lscr.io/linuxserver/sonarr@sha256:f247545d23ba8b233d6604575347e48a623fe6ad75dda02348bf81917f3b5c06",
+    "radarr": "lscr.io/linuxserver/radarr@sha256:adb6c09d6b729ea5e642c99cea35af72702ef476bf4763f153299ac5db9f0b4f",
+    "prowlarr": "lscr.io/linuxserver/prowlarr@sha256:f2b26429893d4c4cb71941b7ee50b1bdecd9d5f9f9e02d5410615e9f4f7c8d95",
+    "qbittorrent": "lscr.io/linuxserver/qbittorrent@sha256:b522f9f4b769f8f36d49d22d5eb6a92e9aa18904c6a1830b1439df511ec21983",
+    "seerr": "stackarr-seerr@sha256:3d0ddfab2de853a31d289316297bf6760e59d5fda4cd3046fd93b6c5dd8da531"
+  },
+  "plex_distribution": {
+    "version": "1.43.4.10903-e5521bd8c",
+    "type": "prepackaged",
+    "reviewed_on": "2026-10-06",
+    "reason": "Avoid public/beta startup downloads; server binary is included in the pinned image."
+  }
+}

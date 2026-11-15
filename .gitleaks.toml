@@ -1,0 +1,11 @@
+title = "Stackarr portable source"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Pinned SHA-256 of upstream Plex API source, not an API credential"
+condition = "AND"
+paths = ['''(?:^|/)platform/seerr/upstream\.lock\.json$''']
+regexTarget = "match"
+regexes = ['''plexapi\.js"\s*:\s*"c9b45371dbd202130aa502d5466012a6aa472f08bcaa6cc42c4897150b8a8de6"''']

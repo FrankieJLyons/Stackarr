@@ -1,0 +1,66 @@
+name: Windows launcher preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, stackarr/portable-core]
+    paths:
+      - '.github/workflows/windows-preview.yml'
+      - '.github/workflows/browser-check.yml'
+      - 'platform/windows/Stackarr.spec'
+      - 'platform/windows/launcher_entry.py'
+      - 'stackarr/**'
+      - 'requirements.lock'
+      - 'pyproject.toml'
+      - 'tools/**'
+      - 'tests/**'
+      - 'LICENSE'
+permissions:
+  contents: read
+jobs:
+  browser:
+    uses: ./.github/workflows/browser-check.yml
+  package:
+    needs: browser
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.lock pytest pytest-asyncio pyinstaller==6.22.3 pip-audit==2.10.1 playwright==1.63.0
+      - run: python -m pytest -q
+      - run: python -m tools.audit_source --working-tree
+      - run: python -m tools.prepare_caddy build/caddy
+      - shell: pwsh
+        run: '"STACKARR_CADDY_BUNDLE=$pwd/build/caddy" >> $env:GITHUB_ENV'
+      - run: python -m playwright install chromium
+      - run: python -m tools.lan_setup_browser_check --output test-results/lan-setup --caddy build/caddy/caddy.exe
+      - run: python -m PyInstaller platform/windows/Stackarr.spec
+      - shell: pwsh
+        run: |
+          $preview = Start-Process -FilePath "$pwd/dist/StackarrPreview.exe" -ArgumentList '--self-test-report', "$pwd/dist/runtime-smoke.json" -PassThru -WindowStyle Hidden
+          if (-not $preview.WaitForExit(60000)) { $preview.Kill(); throw 'Packaged runtime smoke check timed out' }
+          if ($preview.ExitCode -ne 0) { throw 'Packaged runtime smoke check failed' }
+          $result = Get-Content -LiteralPath dist/runtime-smoke.json -Raw | ConvertFrom-Json
+          if (-not $result.passed -or -not $result.frozen -or -not $result.guided_lan) { throw 'Expected a passing packaged executable and bundled gateway check' }
+      - run: python -m tools.package_release
+      - run: python -m pip_audit --strict -r requirements.lock -f cyclonedx-json -o dist/python-dependencies.cdx.json
+      - run: python -m tools.release_metadata
+      - shell: pwsh
+        run: |
+          $artifact = Get-Item -LiteralPath dist/StackarrPreview.exe
+          $digest = (Get-FileHash -LiteralPath $artifact.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$digest  StackarrPreview.exe" | Set-Content -LiteralPath dist/StackarrPreview.exe.sha256 -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-launcher-preview
+          path: |
+            dist/StackarrPreview.exe
+            dist/StackarrPreview.exe.sha256
+            dist/python-dependencies.cdx.json
+            dist/build-metadata.json
+            dist/runtime-smoke.json
+            dist/stackarr-*-source.zip
+            dist/stackarr-*-source.zip.sha256
+            LICENSE
+          retention-days: 7

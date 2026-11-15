@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stackarr"
+version = "0.1.0"
+description = "A portable media stack control center (public beta)"
+requires-python = ">=3.12"
+license = {file = "LICENSE"}
+dependencies = ["fastapi==0.141.1", "uvicorn==0.53.0", "httpx==0.28.1", "pydantic==2.13.5", "cryptography==50.0.1"]
+
+[project.scripts]
+stackarr = "stackarr.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["stackarr*"]
+
+[tool.setuptools.package-data]
+stackarr = ["static/*", "static/icons/*", "static/lan_setup/*", "*.json"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

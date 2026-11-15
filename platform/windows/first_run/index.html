@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get ready for Stackarr</title>
+  <link rel="stylesheet" href="/readiness.css">
+  <script src="/readiness.js" defer></script>
+</head>
+<body>
+<main>
+  <header><a class="brand" href="/" aria-label="Stackarr readiness home"><span class="mark" aria-hidden="true">S</span> Stackarr</a><span class="preview">PRIVATE PREVIEW</span></header>
+  <section class="intro" aria-labelledby="welcome">
+    <p class="eyebrow">FROM SETUP TO MOVIE NIGHT</p>
+    <h1 id="welcome">Movies and TV.<br>One place to start.</h1>
+    <p class="lede">Choose a media folder and quality, find a title, request it and open it in Plex.<br>We’ll guide you through the setup first.</p>
+  </section>
+  <fieldset id="choices">
+    <legend>What would you like to do?</legend>
+    <label class="choice"><input type="radio" name="mode" value="install" checked><span><strong>Install apps on this computer</strong><span>Recommended for a new media setup. We check your computer and guide you through installation.</span></span></label>
+    <label class="choice"><input type="radio" name="mode" value="connect"><span><strong>Connect apps I already run</strong><span>Use your current media apps and their settings.</span></span></label>
+  </fieldset>
+  <section class="summary" aria-labelledby="result-title">
+    <div class="summary-top"><span id="result-badge" class="badge">CHECKING</span><span class="local">ON THIS COMPUTER</span></div>
+    <h2 id="result-title">Checking your computer...</h2>
+    <p id="next-step" role="status" aria-live="polite">This usually takes a few seconds. Docker checks can take longer while its engine starts.</p>
+    <div class="actions"><button id="continue-stackarr" type="button" hidden>Continue to Stackarr</button><button id="install-docker" type="button" hidden>Install Docker Desktop</button><a id="guide" class="button-guide" hidden target="_blank" rel="noopener noreferrer"></a><button id="retry" type="button" disabled>Check again</button><button id="close" class="secondary" type="button">Close checks</button></div>
+    <p id="setup-error" role="alert" hidden></p>
+  </section>
+  <section id="docker-progress" class="summary" hidden aria-labelledby="docker-progress-title">
+    <h2 id="docker-progress-title">Docker setup</h2><p id="docker-message" role="status" aria-live="polite"></p>
+    <progress id="download-progress" max="100" value="0" aria-label="Docker installer download"></progress><span id="download-count"></span>
+    <div class="actions"><button id="cancel-download" class="secondary" type="button" hidden>Cancel download</button></div>
+  </section>
+  <dialog id="docker-review" aria-labelledby="docker-review-title">
+    <h2 id="docker-review-title">Review Docker installation</h2><p id="docker-release"></p><ul id="docker-changes"></ul>
+    <p>Docker's installer may ask for Windows permission or a restart. Read and accept Docker's terms in Docker Desktop when you open it.</p>
+    <a href="https://www.docker.com/legal/docker-subscription-service-agreement/" target="_blank" rel="noopener noreferrer">Read Docker's subscription agreement ↗</a>
+    <label id="previous-installer" hidden><input id="previous-closed" type="checkbox"> I have completed or closed the earlier Docker installer.</label>
+    <div class="actions"><button id="approve-docker" type="button">Download &amp; install</button><button id="dismiss-docker" class="secondary" type="button">Go back</button></div>
+  </dialog>
+  <section aria-labelledby="checks-title"><div class="section-heading"><h2 id="checks-title">Your readiness checks</h2><span id="count"></span></div><ul id="checks" aria-busy="true"></ul></section>
+  <aside class="after"><span aria-hidden="true">UP NEXT</span><div><h2>Next comes your setup</h2><p>Choose Movies & TV, pick a folder and your preferred quality, then review the installation. You’ll need a Plex account for watching and a content provider for new downloads. Setup saves your progress so you can return anytime.</p></div></aside>
+  <section id="network-recovery" class="summary" hidden><h2>Home network &amp; recovery</h2><p>Already set up Stackarr? Prepare secure access from other computers, or recover a saved connection. Device and signed-out reboot checks remain pending.</p><button id="open-network" type="button">Home network &amp; recovery</button></section>
+  <footer>Private Windows preview<span>Checks stay on this computer.</span></footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "base": "ghcr.io/seerr-team/seerr@sha256:27602401178d54f1964442287b9f23f67a3fa2252645ee8065839ea1c3f69e45",
+  "version": "3.5.0-stackarr.2",
+  "source": "https://github.com/seerr-team/seerr/tree/v3.5.0",
+  "files": {
+    "routes/user/index.js": "a9628a3141ad46ba59daea91018c4281e9063423fc7b931a986fb650a4f4d998",
+    "routes/user/usersettings.js": "212026b3cd077928e8ba5c19719f6eecf6cc5e34f5b9c69bdb03e0dcc5c21468",
+    "utils/profileMiddleware.js": "641b361314a7c1b9eab976a65ad73891ac797bd6daba57619ce605d21e00eeb0",
+    "api/plexapi.js": "c9b45371dbd202130aa502d5466012a6aa472f08bcaa6cc42c4897150b8a8de6"
+  },
+  "sources": {
+    "src/utils/plex.ts": "006a4c7097ef5c4103a71c5015613704ca570fb2634de0a90b0501e296504564",
+    "src/hooks/usePlexLogin.ts": "2c14e9a212883a0e2732e29da9ee3510114de7e98c4cdc57f7d644d27ee73e5b",
+    "src/pages/login/plex/loading.tsx": "83ca66689d4ee297093460afe82753bf7e4a183a5769910ffe7119376b6630d9",
+    "src/components/Setup/index.tsx": "d0c900a3a555f2c0d075932f4e7b911a79c32b8664d7844e2e0282b09e659709",
+    "src/components/Settings/SettingsPlex.tsx": "665af19ae6f57ec769fcf4499015306bc2bd57515a61818f8fdcd3ab04ad24e8",
+    "src/components/Login/PlexLoginButton.tsx": "7b0404a0055ffd68c444b61fb571415c2091b1e682ca8d65f444bdff6ad293a7"
+  }
+}
