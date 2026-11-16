@@ -38,14 +38,15 @@ def main():
         if not re.fullmatch(r"[a-fA-F0-9]{40}", args.signer_thumbprint):
             raise SystemExit("Choose the publisher certificate's SHA-1 thumbprint.")
         signature(args.controller_executable.resolve(), args.signer_thumbprint)
-    if args.guided_lan:
-        with tempfile.TemporaryDirectory(prefix="stackarr-lan-package-") as temporary:
-            report = Path(temporary) / "selftest.json"
-            result = subprocess.run([str(args.controller_executable.resolve()), "--self-test-report", str(report)],
-                                    creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
-            value = json.loads(report.read_text()) if report.is_file() else {}
-            if result.returncode or not value.get("passed") or not value.get("guided_lan"):
-                raise SystemExit("Guided LAN packaging requires the tested launcher and pinned bundled Caddy.")
+    with tempfile.TemporaryDirectory(prefix="stackarr-package-check-") as temporary:
+        report = Path(temporary) / "selftest.json"
+        result = subprocess.run([str(args.controller_executable.resolve()), "--self-test-report", str(report)],
+                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
+        value = json.loads(report.read_text(encoding="utf-8")) if report.is_file() else {}
+        if (result.returncode or not value.get("passed") or not value.get("frozen")
+                or value.get("version") != __version__ or not value.get("signin_startup")
+                or (args.guided_lan and not value.get("guided_lan"))):
+            raise SystemExit("Packaging requires the matching tested launcher, startup support and any selected bundled gateway.")
     output = args.output.resolve()
     if not output.is_relative_to(root.resolve()) or output.exists():
         raise SystemExit("Choose a new output directory inside this workspace.")
