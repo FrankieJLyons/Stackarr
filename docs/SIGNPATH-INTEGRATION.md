@@ -55,6 +55,9 @@ the run. There is no fallback to an unsigned artifact labelled signed.
    version as a JSON string. The launcher uses unpadded metadata. Do not replace
    these checks with wildcard suffixes. Verify the service's handling of padding
    with the actual samples during onboarding.
+   The fixed field widths are defined in Inno's
+   [setup resource](https://github.com/jrsoftware/issrc/blob/is-6_7_1/Projects/Res/Setup.version.rc)
+   and [loader resource](https://github.com/jrsoftware/issrc/blob/is-6_7_1/Projects/Res/SetupLdr.version.rc).
 4. Create GitHub environment `signpath-production`, restricted to `main`. Configure
    owner review and disable administrator bypass where available. A sole owner
    may need to approve their own environment deployment; SignPath's separate

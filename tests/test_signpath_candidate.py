@@ -1,6 +1,8 @@
 import json
 import struct
+import xml.etree.ElementTree as ET
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -98,3 +100,33 @@ def test_version_resource_matches_package_version(tmp_path):
     path = Path(write(tmp_path / "version.txt"))
     assert "StringStruct('ProductName', 'Stackarr')" in path.read_text()
     assert f"StringStruct('ProductVersion', '{signing.__version__}')" in path.read_text()
+
+
+@pytest.mark.parametrize("product,version,accepted", [
+    ("Stackarr".ljust(60), signing.__version__.ljust(50), True),
+    ("Stackarr", signing.__version__, False),
+    ("Stackarr Other".ljust(60), signing.__version__.ljust(50), False),
+    ("Stackarr".ljust(60), (signing.__version__ + "1").ljust(50), False),
+])
+def test_inno_metadata_checks_exact_padded_fields(monkeypatch, product, version, accepted):
+    monkeypatch.setattr(signing.subprocess, "CREATE_NO_WINDOW", 0, raising=False)
+    monkeypatch.setattr(signing.subprocess, "run", lambda *args, **kw:
+                        SimpleNamespace(stdout=json.dumps({"product": product, "version": version})))
+    if accepted:
+        signing.metadata(Path("fixture.e32"), inno=True)
+    else:
+        with pytest.raises(ValueError, match="product/version"):
+            signing.metadata(Path("fixture.e32"), inno=True)
+
+
+def test_signpath_policies_target_only_named_stackarr_files():
+    root = Path(__file__).resolve().parents[1] / "platform/windows/signpath"
+    namespace = {"s": "http://signpath.io/artifact-configuration/v1"}
+    for component, name in {"launcher": "StackarrPreview.exe", "uninstaller": "StackarrUninstaller.exe",
+                            "installer": "StackarrSetup.exe"}.items():
+        document = ET.parse(root / (component + ".xml"))
+        targets = document.findall(".//s:pe-file", namespace)
+        assert len(targets) == 1 and targets[0].get("path") == name
+        expected = "Stackarr" if component == "launcher" else "Stackarr".ljust(60)
+        assert targets[0].get("product-name") == expected
+        assert targets[0].get("product-version") == "${version}"
