@@ -62,13 +62,13 @@ def accept(original, signed, thumbprint):
 def metadata(path):
     response = subprocess.run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-         "$v=(Get-Item -LiteralPath $env:STACKARR_SIGNATURE_FILE).VersionInfo; "
+         "$v=[System.Diagnostics.FileVersionInfo]::GetVersionInfo($env:STACKARR_SIGNATURE_FILE); "
          "@{product=$v.ProductName;version=$v.ProductVersion} | ConvertTo-Json -Compress"],
         env=os.environ | {"STACKARR_SIGNATURE_FILE": str(path)}, capture_output=True, text=True,
         timeout=30, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
     value = json.loads(response.stdout)
     if value != {"product": "Stackarr", "version": __version__}:
-        raise ValueError("The PE product/version does not match this Stackarr source revision.")
+        raise ValueError("The PE product/version does not match this Stackarr source revision: " + repr(value))
 
 
 def save(path, value):
