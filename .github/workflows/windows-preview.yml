@@ -6,8 +6,7 @@ on:
     paths:
       - '.github/workflows/windows-preview.yml'
       - '.github/workflows/browser-check.yml'
-      - 'platform/windows/Stackarr.spec'
-      - 'platform/windows/launcher_entry.py'
+      - 'platform/windows/**'
       - 'stackarr/**'
       - 'requirements.lock'
       - 'pyproject.toml'
@@ -44,6 +43,7 @@ jobs:
           $result = Get-Content -LiteralPath dist/runtime-smoke.json -Raw | ConvertFrom-Json
           if (-not $result.passed -or -not $result.frozen -or -not $result.guided_lan) { throw 'Expected a passing packaged executable and bundled gateway check' }
       - run: python -m tools.package_release
+      - run: python -m tools.windows_installer_check
       - run: python -m pip_audit --strict -r requirements.lock -f cyclonedx-json -o dist/python-dependencies.cdx.json
       - run: python -m tools.release_metadata
       - shell: pwsh
@@ -60,6 +60,7 @@ jobs:
             dist/python-dependencies.cdx.json
             dist/build-metadata.json
             dist/runtime-smoke.json
+            test-results/windows-installer.json
             dist/stackarr-*-source.zip
             dist/stackarr-*-source.zip.sha256
             LICENSE

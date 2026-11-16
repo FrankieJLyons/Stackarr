@@ -87,6 +87,9 @@ def check(output):
 
             launches = []
             handoff = start("install", lambda mode: launches.append(mode) or {"url": url})
+            startup_reviews = []
+            handoff.startup = lambda: startup_reviews.append("review") or {
+                "opened": True, "message": "Local startup review opened; nothing enabled."}
             with serving(ReadinessServer(inspector, setup, handoff)) as server:
                 page.goto(server.launch_url)
                 expect(page.locator("#install-docker")).to_be_visible()
@@ -103,6 +106,12 @@ def check(output):
                 engine[0] = True
                 page.locator("#retry").click()
                 expect(page.locator("#continue-stackarr")).to_be_visible()
+                expect(page.locator("#open-startup")).to_be_visible()
+                assert not startup_reviews
+                page.locator("#open-startup").click()
+                expect(page.locator("#next-step")).to_contain_text("nothing enabled")
+                assert startup_reviews == ["review"]
+                cases.append("signin-startup-opens-review-only-after-explicit-action")
                 page.screenshot(path=str(output / "ready-to-continue.png"), full_page=True)
                 assert not handoff.state_root.exists()
                 page.locator("#continue-stackarr").click()

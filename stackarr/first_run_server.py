@@ -119,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
                 or not hmac.compare_digest(valid_key[0].encode("utf-8"), self.server.key.encode("ascii"))):
             self.respond(403)
             return
-        if self.path not in ("/api/check", "/api/close", "/api/docker/review", "/api/docker/start", "/api/docker/status", "/api/docker/cancel", "/api/stackarr/start", "/api/stackarr/status", "/api/stackarr/network"):
+        if self.path not in ("/api/check", "/api/close", "/api/docker/review", "/api/docker/start", "/api/docker/status", "/api/docker/cancel", "/api/stackarr/start", "/api/stackarr/status", "/api/stackarr/network", "/api/stackarr/startup"):
             self.respond(404)
             return
         if (self.headers.get_all("Transfer-Encoding") or self.headers.get_all("Content-Length") is None
@@ -152,10 +152,10 @@ class Handler(BaseHTTPRequestHandler):
                 self.respond(404)
                 return
             try:
-                if self.path == "/api/stackarr/network":
+                if self.path in {"/api/stackarr/network", "/api/stackarr/startup"}:
                     if self.setup_blocked() or self.server.handoff.status()["phase"] == "starting":
                         raise SetupError("Wait for the current setup step to finish, then open Home network & recovery.")
-                    value = self.server.handoff.network()
+                    value = self.server.handoff.startup() if self.path.endswith("/startup") else self.server.handoff.network()
                 elif self.path == "/api/stackarr/start":
                     if self.setup_blocked() or not self.server.check_lock.acquire(blocking=False):
                         raise SetupError("Wait for Docker setup or the current readiness check to finish.")

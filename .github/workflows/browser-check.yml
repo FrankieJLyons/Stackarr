@@ -18,6 +18,9 @@ jobs:
           - scenario: docker-setup
             tool: browser_check
             args: --docker-setup
+          - scenario: integrated-readiness
+            tool: integrated_readiness_browser_check
+            args: --output test-results/integrated-readiness
           - scenario: quality-setup
             tool: quality_setup_browser_check
             args: --output test-results/quality-setup
@@ -54,6 +57,8 @@ jobs:
           path: |
             test-results/*.png
             test-results/browser-report.json
+            test-results/integrated-readiness/*.png
+            test-results/integrated-readiness/report.json
             test-results/quality-setup/*.png
             test-results/quality-setup/report.json
             test-results/refresh-context/*.png

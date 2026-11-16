@@ -1,0 +1,53 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+
+import pytest
+
+from stackarr.self_update import FILES
+from tools.build_windows_installer import OWNER_FILE, OWNER_TEXT, build, stage
+
+
+@pytest.fixture
+def payload(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    for name in FILES:
+        (source / name).write_bytes(("Synthetic " + name).encode())
+    manifest = {"schema": 1, "release": "Test", "image": "stackarr:test", "image_id": "sha256:" + "a" * 64,
+                "maintenance": {"protocol": 1, "state_schema": 1}, "signin_startup": 1,
+                "files": {name: hashlib.sha256((source / name).read_bytes()).hexdigest() for name in FILES}}
+    (source / "manifest.json").write_text(json.dumps(manifest))
+    return source
+
+
+def test_only_verified_manifest_files_are_installed(payload, tmp_path):
+    (payload / "private-extra.txt").write_text("not part of package")
+    dest = tmp_path / "staged"
+    stage(payload, dest)
+    assert set(p.name for p in dest.iterdir()) == FILES | {"manifest.json", OWNER_FILE}
+    assert (dest / OWNER_FILE).read_text() == OWNER_TEXT
+    assert not (dest / "private-extra.txt").exists()
+
+
+def test_corrupt_package_is_rejected_before_staging(payload, tmp_path):
+    (payload / "StackarrPreview.exe").write_bytes(b"changed")
+    with pytest.raises(ValueError):
+        stage(payload, tmp_path / "staged")
+    assert not (tmp_path / "staged").exists()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows builder")
+def test_signed_release_cannot_fall_back_to_unsigned(payload, tmp_path):
+    with pytest.raises(ValueError, match="Signing identity"):
+        build(payload, tmp_path / "output", "0.1.1", Path("missing.exe"), require_signed=True)
+    assert not (tmp_path / "output").exists()
+
+
+def test_hosted_installer_acceptance_refuses_a_user_machine(monkeypatch):
+    from tools.windows_installer_check import run
+
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    with pytest.raises(RuntimeError, match="disposable"):
+        run()

@@ -205,7 +205,7 @@ def main():
     image_id = subprocess.check_output([docker, "image", "inspect", args.image, "--format", "{{.Id}}"], text=True).strip()
     manifest = {"schema": 1, "image": args.image, "image_id": image_id,
                 "bundled_app_images": [{"app": key, "image": row["image"], "image_id": call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip()} for key, row in bundled.items()],
-                "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1,
+                "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1, "signin_startup": 1,
                 "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                 "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()),
                 "signed": False, "files": {path.name: digest(path) for path in output.iterdir() if path.is_file()},
