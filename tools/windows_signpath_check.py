@@ -74,6 +74,11 @@ def run():
                 shutil.copyfile(work / ("request-" + component) / name, signed)
                 subprocess.run([sign_tool, "sign", "/sha1", thumbprint, "/fd", "SHA256", "/tr",
                                 "http://timestamp.digicert.com", "/td", "SHA256", str(signed)], check=True, timeout=90)
+                print(powershell(
+                    "$s=Get-AuthenticodeSignature -LiteralPath $env:TEST_SIGNED_FILE; "
+                    "@{status=[string]$s.Status;timestamped=($null -ne $s.TimeStamperCertificate);"
+                    "publisherMatches=($s.SignerCertificate.Thumbprint -eq $env:TEST_CERTIFICATE)} | ConvertTo-Json -Compress",
+                    TEST_SIGNED_FILE=str(signed), TEST_CERTIFICATE=thumbprint), flush=True)
                 receive(work, returned, component, thumbprint, compiler)
                 results[component + "_verified"] = True
             package(work / "payload")

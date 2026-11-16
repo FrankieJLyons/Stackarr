@@ -22,6 +22,8 @@ def signature(path, thumbprint):
     system = Path(os.environ["SystemRoot"])
     response = subprocess.run(
         [str(system / "System32/WindowsPowerShell/v1.0/powershell.exe"), "-NoProfile", "-Command",
+         "$ErrorActionPreference='Stop'; "
+         "Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1'); "
          "$s=Get-AuthenticodeSignature -LiteralPath $env:STACKARR_SIGNATURE_FILE; "
          "@{valid=($s.Status -eq 'Valid');thumbprint=$s.SignerCertificate.Thumbprint;"
          "timestamped=($null -ne $s.TimeStamperCertificate)} | ConvertTo-Json -Compress"],
