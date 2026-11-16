@@ -1,5 +1,8 @@
 # Stackarr 0.2 usability and first watch plan
 
+> [!NOTE]
+> Historical plan. The [current roadmap](ROADMAP.md) supersedes this document's release priorities and status claims as of 16 November 2026. Some unchecked items below shipped in 0.1.0; retain this document as design history, not a current feature checklist.
+
 Planning date: 20 October 2026. Baseline: the private Alpha 0.1 package documented in [ALPHA-0.1-TEST.md](ALPHA-0.1-TEST.md).
 
 The next release should let a beginner install Stackarr, add a movie or TV show, understand its progress and watch it on their chosen device. Everyday controls should describe those tasks. Plex remains responsible for playback, Seerr for requests, and the Arr apps for finding and importing media.

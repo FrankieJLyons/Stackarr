@@ -1,5 +1,8 @@
 # Stackarr product plan
 
+> [!NOTE]
+> Historical plan. The [current roadmap](ROADMAP.md) supersedes this document's release priorities and status claims as of 16 November 2026. Some unchecked items below shipped in 0.1.0; retain this document as design history, not a current feature checklist.
+
 Delivery priority: [COMPLETION-PLAN.md](COMPLETION-PLAN.md) sets the proposed remaining work and acceptance gates from the 16 October 2026 source baseline. [ONE-DOWNLOAD-PLAN.md](ONE-DOWNLOAD-PLAN.md) defines the Windows installer, guided fresh setup, LAN playback and startup-before-sign-in experience. These focused plans take priority over the broad milestone order below.
 
 ## Product promise

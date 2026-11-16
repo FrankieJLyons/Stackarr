@@ -1,5 +1,8 @@
 # Stackarr completion plan
 
+> [!NOTE]
+> Historical plan. The [current roadmap](ROADMAP.md) supersedes this document's release priorities and status claims as of 16 November 2026. Some unchecked items below shipped in 0.1.0; retain this document as design history, not a current feature checklist.
+
 Planning baseline: 16 October 2026, application revision `e169c71`.
 
 The [Stackarr 0.2 usability and first watch plan](UX-0.2-PLAN.md), dated 20 October 2026, defines the next release's beginner setup, source/request, title-progress and household viewing work. Use its delivery sequence for that work while retaining the technical release gates and environment boundaries below.

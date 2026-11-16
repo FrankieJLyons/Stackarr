@@ -1,5 +1,8 @@
 # Stackarr: one download to a working home media server
 
+> [!NOTE]
+> Historical plan. The [current roadmap](ROADMAP.md) supersedes this document's release priorities and status claims as of 16 November 2026. Some unchecked items below shipped in 0.1.0; retain this document as design history, not a current feature checklist.
+
 Planning revision: 25 September 2026. This is the delivery plan, not a claim that the current alpha already provides this experience. It narrows PRODUCT-PLAN.md and takes priority where the older sequencing differs.
 
 The proposed remaining execution order and release gates, based on the 16 October 2026 source baseline, are maintained in [COMPLETION-PLAN.md](COMPLETION-PLAN.md).

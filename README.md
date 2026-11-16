@@ -21,7 +21,7 @@ Set up your home media server, connect your apps, and follow the journey from re
 
 [![Download for Windows](https://img.shields.io/badge/Download_for_Windows-v0.1.0-78b7ff?style=for-the-badge&logo=github&logoColor=07111f)](https://github.com/FrankieJLyons/Stackarr/releases/download/v0.1.0/Stackarr-0.1.0-Windows-x64.zip)
 
-[Getting started](#-download-and-start) · [What’s included](#-included-in-this-beta) · [Beta checklist](docs/BETA-0.1.0.md) · [Report a bug](https://github.com/FrankieJLyons/Stackarr/issues/new?template=bug_report.md)
+[Getting started](#-download-and-start) · [What’s included](#-included-in-this-beta) · [Beta checklist](docs/BETA-0.1.0.md) · [Roadmap](docs/ROADMAP.md) · [Report a bug](https://github.com/FrankieJLyons/Stackarr/issues/new?template=bug_report.md)
 
 </div>
 
