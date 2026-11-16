@@ -1,5 +1,6 @@
 import json
 import struct
+import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from types import SimpleNamespace
@@ -8,6 +9,21 @@ import pytest
 
 from tools import signpath_candidate as signing
 from tools.windows_version import write
+
+
+def test_signpath_cli_normalizes_relative_prepare_and_receive_paths(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    prepared, received = [], []
+    monkeypatch.setattr(signing, "prepare", lambda *args: prepared.append(args))
+    monkeypatch.setattr(signing, "receive", lambda *args: received.append(args))
+    monkeypatch.setattr(sys, "argv", ["signing", "prepare", "--input", "incoming", "--work", "build/signpath",
+                                     "--kind", "package", "--revision", "a" * 40])
+    signing.main()
+    assert prepared == [(tmp_path / "incoming", tmp_path / "build/signpath", "package", "a" * 40)]
+    monkeypatch.setattr(sys, "argv", ["signing", "receive", "--work", "build/signpath", "--returned", "returned",
+                                     "--component", "launcher", "--thumbprint", "b" * 40, "--compiler", "ISCC.exe"])
+    signing.main()
+    assert received == [(tmp_path / "build/signpath", tmp_path / "returned", "launcher", "b" * 40, tmp_path / "ISCC.exe")]
 
 
 def binary(*, signed=False, changed=False, magic=0x20b):

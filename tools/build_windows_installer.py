@@ -17,6 +17,11 @@ OWNER_FILE = "stackarr-installer-owner.txt"
 OWNER_TEXT = "Stackarr per-user installer v1\n"
 
 
+def absolute_path(value):
+    # CLI paths may be relative. Do not resolve links before direct() can reject them.
+    return Path(value).absolute()
+
+
 def signature(path, thumbprint):
     """Read public signer identity only; never import/export a certificate or key."""
     system = Path(os.environ["SystemRoot"])
@@ -97,12 +102,12 @@ def build(source, output, version, compiler, *, certificate=None, sign_tool=None
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--package", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--package", type=absolute_path, required=True)
+    parser.add_argument("--output", type=absolute_path, required=True)
     parser.add_argument("--version", required=True)
-    parser.add_argument("--compiler", type=Path, required=True)
+    parser.add_argument("--compiler", type=absolute_path, required=True)
     parser.add_argument("--certificate-sha1")
-    parser.add_argument("--sign-tool", type=Path)
+    parser.add_argument("--sign-tool", type=absolute_path)
     parser.add_argument("--require-signed", action="store_true")
     args = parser.parse_args()
     print(build(args.package, args.output, args.version, args.compiler, certificate=args.certificate_sha1,

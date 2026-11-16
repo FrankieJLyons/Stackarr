@@ -1,12 +1,27 @@
 import hashlib
 import json
 import os
+import sys
 from pathlib import Path
 
 import pytest
 
 from stackarr.self_update import FILES
 from tools.build_windows_installer import OWNER_FILE, OWNER_TEXT, build, signature, stage
+
+
+def test_installer_cli_accepts_relative_paths_without_resolving_links(tmp_path, monkeypatch):
+    from tools import build_windows_installer as installer
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["installer", "--package", "dist/package", "--output", "dist/installers",
+                                     "--version", "0.1.1", "--compiler", "tools/ISCC.exe"])
+    captured = []
+    monkeypatch.setattr(installer, "build", lambda *args, **kw: captured.append(args))
+    installer.main()
+    assert captured == [(tmp_path / "dist/package", tmp_path / "dist/installers", "0.1.1", tmp_path / "tools/ISCC.exe")]
+    # absolute() retains link path components for the existing direct() checks.
+    assert installer.absolute_path("link/../output") == tmp_path / "link/../output"
 
 
 @pytest.fixture

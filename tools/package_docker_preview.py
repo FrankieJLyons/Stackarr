@@ -36,7 +36,7 @@ def main():
         from tools.hosted_package import revision, validate_bundle, validate_launcher
 
         source_revision = revision()
-        validate_launcher(args.controller_executable.resolve().parent, source_revision)
+        validate_launcher(args.controller_executable.resolve(), source_revision)
         receipt = validate_bundle(args.image_bundle, source_revision, args.image)
     if args.signer_thumbprint:
         import re

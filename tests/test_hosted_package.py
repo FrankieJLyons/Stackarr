@@ -112,14 +112,26 @@ def test_exact_package_zip_is_verified(tmp_path, archive):
     assert result["release"] == "Test"
 
 
+def test_relative_extraction_path_keeps_package_validation(tmp_path, archive, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    with zipfile.ZipFile("package.zip", "w") as bundle:
+        for name, data in archive.items():
+            bundle.writestr("Test/" + name, data)
+    assert hosted.extract("package.zip", "extracted")["release"] == "Test"
+
+
 def test_launcher_handoff_rejects_wrong_revision_and_tampering(tmp_path):
     exe = tmp_path / "StackarrPreview.exe"
     exe.write_bytes(b"fixture launcher")
     hosted.write(tmp_path / "build-metadata.json", {
         "source_revision": "a" * 40, "artifacts_sha256": {exe.name: hosted.digest(exe)}})
-    hosted.validate_launcher(tmp_path, "a" * 40)
+    hosted.validate_launcher(exe, "a" * 40)
     with pytest.raises(ValueError):
-        hosted.validate_launcher(tmp_path, "b" * 40)
+        hosted.validate_launcher(exe, "b" * 40)
+    other = tmp_path / "Different.exe"
+    other.write_bytes(b"a different executable beside the verified launcher")
+    with pytest.raises(ValueError):
+        hosted.validate_launcher(other, "a" * 40)
     exe.write_bytes(b"changed")
     with pytest.raises(ValueError):
-        hosted.validate_launcher(tmp_path, "a" * 40)
+        hosted.validate_launcher(exe, "a" * 40)

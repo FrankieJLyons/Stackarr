@@ -19,6 +19,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 from stackarr import __version__
+from stackarr.backup_policy import direct
 from stackarr.bundled_images import catalog, verify
 from stackarr.self_update import FILES, package
 
@@ -59,7 +60,7 @@ def image_name():
 
 def extract(archive, destination, *, images_only=False):
     """Only admit the exact flat package format, never ZIP-directed filesystem paths."""
-    destination = Path(destination)
+    destination = direct(Path(destination).absolute())
     destination.mkdir(parents=True, exist_ok=False)
     with zipfile.ZipFile(archive) as bundle:
         infos = bundle.infolist()
@@ -102,11 +103,11 @@ def validate_bundle(source, expected_revision, expected_image):
     return receipt
 
 
-def validate_launcher(source, expected_revision):
-    source = Path(source)
-    receipt = json.loads((source / "build-metadata.json").read_text(encoding="utf-8"))
+def validate_launcher(executable, expected_revision):
+    executable = Path(executable)
+    receipt = json.loads((executable.parent / "build-metadata.json").read_text(encoding="utf-8"))
     if (receipt.get("source_revision") != expected_revision
-            or receipt.get("artifacts_sha256", {}).get("StackarrPreview.exe") != digest(source / "StackarrPreview.exe")):
+            or receipt.get("artifacts_sha256", {}).get("StackarrPreview.exe") != digest(executable)):
         raise ValueError("Launcher was not built from this revision or changed after its build.")
 
 
@@ -222,7 +223,7 @@ def main():
     elif args.mode == "check":
         check(args.archive, args.bundle, args.output)
     else:
-        validate_launcher(args.launcher, revision())
+        validate_launcher(args.launcher / "StackarrPreview.exe", revision())
 
 
 if __name__ == "__main__":

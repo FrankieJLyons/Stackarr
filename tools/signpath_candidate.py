@@ -14,7 +14,7 @@ from pathlib import Path
 from stackarr import __version__
 from stackarr.backup_policy import direct
 from stackarr.self_update import FILES, package
-from tools.build_windows_installer import signature, stage
+from tools.build_windows_installer import absolute_path, signature, stage
 
 
 def digest(path):
@@ -208,16 +208,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     first = sub.add_parser("prepare")
-    first.add_argument("--input", type=Path, required=True)
+    first.add_argument("--input", type=absolute_path, required=True)
     first.add_argument("--kind", choices=("launcher", "package"), required=True)
     first.add_argument("--revision", required=True)
-    first.add_argument("--work", type=Path, required=True)
+    first.add_argument("--work", type=absolute_path, required=True)
     later = sub.add_parser("receive")
-    later.add_argument("--work", type=Path, required=True)
-    later.add_argument("--returned", type=Path, required=True)
+    later.add_argument("--work", type=absolute_path, required=True)
+    later.add_argument("--returned", type=absolute_path, required=True)
     later.add_argument("--component", choices=("launcher", "uninstaller", "installer"), required=True)
     later.add_argument("--thumbprint", required=True)
-    later.add_argument("--compiler", type=Path)
+    later.add_argument("--compiler", type=absolute_path)
     args = parser.parse_args()
     if args.command == "prepare":
         prepare(args.input, args.work, args.kind, args.revision)
