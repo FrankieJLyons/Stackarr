@@ -61,7 +61,8 @@ identity is configured by these changes. The builder can use Windows SDK SignToo
 with a selected certificate already present in the publisher's certificate store;
 it does not import, export or store private keys.
 
-Sign and timestamp the launcher **before** producing its package manifest. Then
+Sign and timestamp the launcher **before** producing its package manifest and use
+the Docker packager's `--signer-thumbprint` option to verify and record signing. Then
 pass `--certificate-sha1`, `--sign-tool` and `--require-signed` to the builder. It
 checks the launcher's valid Authenticode signature and expected certificate,
 configures Inno Setup to sign the uninstaller and installer, and verifies the final

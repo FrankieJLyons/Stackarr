@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from stackarr.self_update import FILES
-from tools.build_windows_installer import OWNER_FILE, OWNER_TEXT, build, stage
+from tools.build_windows_installer import OWNER_FILE, OWNER_TEXT, build, signature, stage
 
 
 @pytest.fixture
@@ -51,3 +51,17 @@ def test_hosted_installer_acceptance_refuses_a_user_machine(monkeypatch):
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     with pytest.raises(RuntimeError, match="disposable"):
         run()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows Authenticode command")
+@pytest.mark.parametrize("valid,signer,timestamp", [(False, "a" * 40, True), (True, "b" * 40, True), (True, "a" * 40, False)])
+def test_unsigned_wrong_publisher_or_missing_timestamp_are_rejected(monkeypatch, tmp_path, valid, signer, timestamp):
+    from types import SimpleNamespace
+
+    def inspect(command, **options):
+        assert not options.get("shell")
+        assert options["env"]["STACKARR_SIGNATURE_FILE"] == str(tmp_path / "fixture.exe")
+        return SimpleNamespace(returncode=0, stdout=json.dumps({"valid": valid, "thumbprint": signer, "timestamped": timestamp}))
+    monkeypatch.setattr("tools.build_windows_installer.subprocess.run", inspect)
+    with pytest.raises(ValueError, match="timestamped signature"):
+        signature(tmp_path / "fixture.exe", "a" * 40)

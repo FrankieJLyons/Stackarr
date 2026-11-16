@@ -205,6 +205,9 @@
     approveDocker.disabled = true;
     try {
       await request("/api/docker/start", {review_id:review.review_id, previous_closed:previousClosed.checked});
+      // A fast installer can finish before the first status response. Remember
+      // the accepted start so its terminal result always refreshes readiness.
+      setupBusy = true;
       reviewDialog.close();
       review = null;
       await pollSetup();

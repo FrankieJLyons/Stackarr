@@ -58,7 +58,7 @@ jobs:
             test-results/*.png
             test-results/browser-report.json
             test-results/integrated-readiness/*.png
-            test-results/integrated-readiness/report.json
+            test-results/integrated-readiness/browser-report.json
             test-results/quality-setup/*.png
             test-results/quality-setup/report.json
             test-results/refresh-context/*.png

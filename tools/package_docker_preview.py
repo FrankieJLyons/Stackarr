@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from stackarr import __version__
 from stackarr.bundled_images import catalog as bundled_catalog
 from stackarr.bundled_images import verify as verify_bundled
 from stackarr.docker_runtime import executable
@@ -26,8 +27,17 @@ def main():
     parser.add_argument("--controller-executable", type=Path, default=Path("dist/StackarrPreview.exe"))
     parser.add_argument("--alpha-test", action="store_true", help="Portable state, a new test-media folder and a short alpha walkthrough")
     parser.add_argument("--guided-lan", action="store_true", help="Require a self-tested launcher with the pinned gateway bundled")
+    parser.add_argument("--signer-thumbprint", help="Require a valid timestamped launcher signature from this publisher certificate")
     args = parser.parse_args()
     root = Path.cwd()
+    if args.signer_thumbprint:
+        import re
+
+        from tools.build_windows_installer import signature
+
+        if not re.fullmatch(r"[a-fA-F0-9]{40}", args.signer_thumbprint):
+            raise SystemExit("Choose the publisher certificate's SHA-1 thumbprint.")
+        signature(args.controller_executable.resolve(), args.signer_thumbprint)
     if args.guided_lan:
         with tempfile.TemporaryDirectory(prefix="stackarr-lan-package-") as temporary:
             report = Path(temporary) / "selftest.json"
@@ -150,7 +160,7 @@ def main():
     # Keep the first-run instructions short; retain detailed operations separately.
     technical_guide = (output / "README.txt").read_text(encoding="utf-8")
     (output / "README.txt").write_text(
-        "STACKARR 0.1.0 - WINDOWS PUBLIC BETA\n\n"
+        f"STACKARR {__version__} - WINDOWS PUBLIC BETA\n\n"
         "Start here\n"
         "1. Extract this complete ZIP into its own folder. Keep the files together.\n"
         "2. Double-click Start Stackarr.cmd. Choose Install apps on this computer.\n"
@@ -179,7 +189,7 @@ def main():
         "Configured apps open in the blue Media Stack control room. Add app installs or connects\n"
         "another app; Restart on a managed app card checks its state before your review.\n"
         "Discover opens browsing and requests. Setup, Apps and Backups remain one click away.\n\n"
-        "This is an unsigned public beta. Real-account import-to-playback, a clean Windows\n"
+        f"This is a public beta. The launcher is {'signed' if args.signer_thumbprint else 'unsigned'}. Real-account import-to-playback, a clean Windows\n"
         "install, TV/phone access and restart behavior still require acceptance testing.\n",
         encoding="utf-8")
     with (output / "README.txt").open("a", encoding="utf-8") as guide:
@@ -208,7 +218,7 @@ def main():
                 "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1, "signin_startup": 1,
                 "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                 "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()),
-                "signed": False, "files": {path.name: digest(path) for path in output.iterdir() if path.is_file()},
+                "signed": bool(args.signer_thumbprint), "files": {path.name: digest(path) for path in output.iterdir() if path.is_file()},
                 "scope": "Docker Desktop preview, no runtime data, enrollment, credentials or media included"}
     if args.alpha_test:
         manifest["alpha_test"] = {"version": "0.1", "state": "alpha-data/docker", "media": "alpha-data/media",

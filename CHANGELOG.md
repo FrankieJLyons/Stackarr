@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.1 — unreleased candidate
+
+- Added opt-in current-user startup after Windows sign-in, bounded Docker readiness
+  waiting, quiet saved-runtime resume and redacted failure status.
+- Added a per-user installer with Start menu shortcuts, explicit owned-path checks
+  and uninstall preservation of settings, Docker apps, media and untracked files.
+- Added publisher-signature/timestamp checks and explicit unsigned artifact names;
+  signed builds require a provisioned publisher identity and cannot fall back silently.
+- Added hosted Windows installation/registration/removal acceptance and readiness
+  browser coverage. Startup before Windows sign-in remains unsupported.
+- Reconciled the roadmap and added a released-package fresh-user walkthrough.
+
+This candidate is not yet a public release. Clean Windows 11, actual sign-in/reboot,
+exact-package Docker startup and publisher-signing acceptance remain release gates.
+
 ## 0.1.0 — public beta
 
 - Added the media control room, app catalog, responsive setup checklist and appearance preferences.
