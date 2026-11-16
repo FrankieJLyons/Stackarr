@@ -42,6 +42,11 @@ Moving/changing the launcher package requires reviewing startup again.
 
 ## Build an unsigned candidate
 
+Use the [complete hosted package workflow](HOSTED-PACKAGE.md) to build the launcher,
+dashboard image, portable ZIP and actual installer without local Docker commands.
+Its final Linux job validates the package and starts both included services in
+isolated disposable containers. This does not replace Windows 11 onboarding tests.
+
 Use a complete package created by the matching source revision's Docker packager.
 The package must contain the new launcher and `signin_startup: 1` metadata. Do not
 add that flag to a 0.1.0 binary: it does not contain the startup commands.

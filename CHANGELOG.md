@@ -10,6 +10,9 @@
   signed builds require a provisioned publisher identity and cannot fall back silently.
 - Prepared a SignPath application, code signing policy and disabled GitHub signing
   integration, including launcher/uninstaller/installer handoffs and PE metadata.
+- Added a hosted complete-package build with current launcher/dashboard, the
+  unchanged pinned Seerr dependency, real unsigned installer, revision/hash checks
+  and fresh-runner image loading and isolated service smoke checks.
 - Added hosted Windows installation/registration/removal acceptance and readiness
   browser coverage. Startup before Windows sign-in remains unsupported.
 - Reconciled the roadmap and added a released-package fresh-user walkthrough.

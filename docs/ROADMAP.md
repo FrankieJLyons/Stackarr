@@ -26,7 +26,7 @@ This is a proposed maintenance release, not a published version or a delivery-da
 | 1 | Fresh-user acceptance and fixes | Awaiting the released-package walkthrough | Complete [the walkthrough](BETA-WALKTHROUGH.md), record blockers and retest fixes on the candidate artifact. |
 | 2 | Reliable return after Windows sign-in | Implemented on the 0.1.1 candidate branch; physical acceptance pending | Opt-in, removable startup registration; bounded wait for Docker; quiet reuse of the existing installation; recovery from unavailable Docker; no unrelated startup changes. |
 | 3 | Conventional Windows installation | Candidate per-user installer and hosted acceptance; not released | Stable owned application/state locations, shortcuts, upgrade/rollback behavior, uninstall preservation and clean-Windows acceptance. |
-| 4 | Publicly trusted signing | SignPath application and disabled integration prepared; provider approval pending | Hosted full-package build, approved signing identity and live SignPath validation; verify publisher/timestamp on launcher, installer and embedded uninstaller. |
+| 4 | Publicly trusted signing | SignPath application, hosted full-package caller and disabled integration prepared; provider approval pending | Passing complete-package build, approved signing identity and live SignPath validation; verify publisher/timestamp on launcher, installer and embedded uninstaller. |
 | 5 | Current documentation | Reconciled here | README, roadmap and release limits agree; historical evidence stays labeled. |
 
 Docker Desktop documents automatic start **at sign-in**. A sign-in startup feature must not be advertised as unattended boot before sign-in. The latter remains a separate runtime feasibility and physical acceptance gate. See [Docker settings](https://docs.docker.com/desktop/settings-and-maintenance/settings/) and the [Windows runtime lab](WINDOWS-RUNTIME-LAB.md).
@@ -36,7 +36,8 @@ Signing requires a publisher-controlled certificate or signing service and ident
 See [Windows installer candidate](WINDOWS-INSTALLER.md) for implementation, signing inputs and remaining validation.
 The [SignPath application packet](SIGNPATH-APPLICATION.md) records eligibility disclosures
 and the [integration guide](SIGNPATH-INTEGRATION.md) separates tested preparation
-from provider activation and the remaining hosted full-package build.
+from provider activation. The [hosted package guide](HOSTED-PACKAGE.md) covers the
+complete Docker download, real unsigned installer and fresh-runner verification.
 
 ## Acceptance still required
 

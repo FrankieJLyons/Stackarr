@@ -1,5 +1,10 @@
 name: Windows launcher preview
 on:
+  workflow_call:
+    inputs:
+      sign:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       sign:

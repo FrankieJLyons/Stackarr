@@ -12,12 +12,13 @@ After its build/tests succeed, an explicitly selected run on `main` can call
 also supports `kind: package` for a complete package produced earlier in the same
 run. It does not accept an external URL, a different run ID or local binary uploads.
 
-The full-package build caller is **not yet wired**: the existing packager requires
-Docker and a verified pinned Seerr image, while the Windows hosted build currently
-produces only the launcher/source artifacts. Do not pass the synthetic installer
-fixture to production signing. A GitHub-hosted full-package build and transfer
-between hosted Linux/Windows jobs must be completed before using package mode.
-This is separate from the signing adapter and remains a 0.1.1 release gate.
+The complete-package caller is `.github/workflows/complete-package.yml`. It builds
+the dashboard on hosted Linux and the launcher on hosted Windows, assembles the
+real portable ZIP and unsigned installer, then loads and smoke-tests the ZIP's
+images on a fresh Linux runner. Only after that check succeeds can an explicit
+main-branch `sign: true` dispatch call package signing. Pull-request builds cannot
+request signing. See [hosted build details](HOSTED-PACKAGE.md), including the
+unchanged Seerr dependency recovered from the checksummed 0.1.0 release.
 
 Package mode performs three requests in order:
 
@@ -42,8 +43,8 @@ the run. There is no fallback to an unsigned artifact labelled signed.
 2. Connect SignPath's GitHub trusted build system and its GitHub App to **only**
    `FrankieJLyons/Stackarr`. Constrain the SignPath policy to this repository,
    `main`, the reviewed caller workflow and GitHub-hosted runners. The launcher
-   caller is `.github/workflows/windows-preview.yml`; review any future package
-   caller before adding it to the service's allowed policy.
+   caller is `.github/workflows/windows-preview.yml`; the complete-package caller
+   is `.github/workflows/complete-package.yml`. Review both before allowing them.
 3. Create artifact configurations named `launcher`, `uninstaller` and `installer`
    from `platform/windows/signpath/*.xml`. They describe GitHub's ZIP artifacts,
    allow one named PE target and constrain product/version. Verify the templates
@@ -90,19 +91,19 @@ Only test reports are retained; those binaries must not be distributed.
 
 After approval, make a manual main-branch launcher run with `sign: true`, review
 the request in SignPath, and verify the downloaded artifact on a clean Windows
-machine. Then complete the full-package hosted caller and repeat the three-stage
+machine. Then dispatch the complete-package caller and repeat the three-stage
 flow with the real payload. Real SignPath API behavior, Foundation policy approval,
 public certificate trust, clean Windows setup and sign-in/reboot acceptance remain
 unverified until those runs occur.
 
-Future package caller job (after its complete-package build succeeds):
+The complete-package caller's signing job is gated on assembly and verification:
 
 ```yaml
 sign:
-  needs: complete-package
+  needs: [assemble, verify]
   uses: ./.github/workflows/signpath.yml
   with:
-    artifact-name: complete-windows-package
+    artifact-name: unsigned-complete-signing-input
     kind: package
 ```
 

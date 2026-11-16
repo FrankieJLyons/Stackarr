@@ -25,11 +25,19 @@ def main():
     parser.add_argument("--image", required=True)
     parser.add_argument("--output", type=Path, required=True, help="New empty output directory")
     parser.add_argument("--controller-executable", type=Path, default=Path("dist/StackarrPreview.exe"))
+    parser.add_argument("--image-bundle", type=Path, help="Verified hosted image export; assembly makes no Docker calls")
     parser.add_argument("--alpha-test", action="store_true", help="Portable state, a new test-media folder and a short alpha walkthrough")
     parser.add_argument("--guided-lan", action="store_true", help="Require a self-tested launcher with the pinned gateway bundled")
     parser.add_argument("--signer-thumbprint", help="Require a valid timestamped launcher signature from this publisher certificate")
     args = parser.parse_args()
     root = Path.cwd()
+    receipt = None
+    if args.image_bundle:
+        from tools.hosted_package import revision, validate_bundle, validate_launcher
+
+        source_revision = revision()
+        validate_launcher(args.controller_executable.resolve().parent, source_revision)
+        receipt = validate_bundle(args.image_bundle, source_revision, args.image)
     if args.signer_thumbprint:
         import re
 
@@ -197,25 +205,31 @@ def main():
         if args.guided_lan:
             guide.write("\nHOME NETWORK & RECOVERY\n\nReopen Start Stackarr.cmd and choose Home network & recovery. Prepare the home\nconnection and prepare secure access. Review activation, start the gateway, then\ncopy its address. Download the public certificate and trust it once per device.\nChoose your device in the helper for instructions. An optional local computer name\ncan be used if your devices already resolve it. Keep the local recovery address. Preparation keeps current apps and host network settings\nunchanged. The helper includes reviewed activation, gateway restart and LAN\nrollback. Certificate trust, firewall access and signed-out Windows startup still\nneed acceptance on a spare host; no system settings are installed automatically.\n\n")
         guide.write("\n\nADVANCED REFERENCE\n\n" + technical_guide)
-    docker = executable()
-    bundled = bundled_catalog()
-    def call(arguments):
-        return subprocess.check_output([docker, *arguments], text=True)
-    for row in bundled.values():
-        verify_bundled(call, row["image"])
-    # Docker save by digest alone loses the repository association on load.
-    # Save the reviewed tag too, after binding it to the exact immutable image.
-    app_tags = []
-    for row in bundled.values():
-        tag = row["image"].split("@", 1)[0] + ":" + row["version"]
-        if call(["image", "inspect", tag, "--format", "{{.Id}}"]).strip() != call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip():
-            raise SystemExit("The packaged app tag does not match its reviewed immutable image.")
-        app_tags.append(tag)
-    subprocess.run([docker, "save", "--output", str(output / "stackarr-image.tar"), args.image,
-                    *app_tags], check=True, timeout=300)
-    image_id = subprocess.check_output([docker, "image", "inspect", args.image, "--format", "{{.Id}}"], text=True).strip()
+    if args.image_bundle:
+        shutil.copyfile(args.image_bundle / "stackarr-image.tar", output / "stackarr-image.tar")
+        image_id, bundled_images = receipt["image_id"], receipt["bundled_app_images"]
+    else:
+        docker = executable()
+        bundled = bundled_catalog()
+
+        def call(arguments):
+            return subprocess.check_output([docker, *arguments], text=True)
+
+        app_tags, bundled_images = [], []
+        for key, row in bundled.items():
+            verify_bundled(call, row["image"])
+            tag = row["image"].split("@", 1)[0] + ":" + row["version"]
+            app_id = call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip()
+            if call(["image", "inspect", tag, "--format", "{{.Id}}"]).strip() != app_id:
+                raise SystemExit("The packaged app tag does not match its reviewed immutable image.")
+            app_tags.append(tag)
+            bundled_images.append({"app": key, "image": row["image"], "image_id": app_id})
+        # Saving the reviewed tag preserves repository association on load.
+        subprocess.run([docker, "save", "--output", str(output / "stackarr-image.tar"), args.image,
+                        *app_tags], check=True, timeout=300)
+        image_id = call(["image", "inspect", args.image, "--format", "{{.Id}}"]).strip()
     manifest = {"schema": 1, "image": args.image, "image_id": image_id,
-                "bundled_app_images": [{"app": key, "image": row["image"], "image_id": call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip()} for key, row in bundled.items()],
+                "bundled_app_images": bundled_images,
                 "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1, "signin_startup": 1,
                 "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                 "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()),

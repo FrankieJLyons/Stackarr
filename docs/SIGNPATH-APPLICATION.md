@@ -47,7 +47,11 @@ Send these as part of the application, not as assumptions that eligibility is me
   Seerr image. Seerr's MIT notice, patch files, pinned upstream inputs and build
   recipe are included. Ask the Foundation whether this distribution and the
   Seerr modifications meet its upstream/fork requirements. No signature over the
-  Seerr image itself is requested.
+  Seerr image itself is requested. The hosted 0.1.1 build preserves the exact
+  reviewed Seerr image from the checksummed public 0.1.0 ZIP, verifies its digest
+  and patch labels, and records that dependency origin. It rebuilds the Stackarr
+  dashboard and launcher; it does not claim to rebuild Seerr in that run. Confirm
+  that this dependency provenance is acceptable to the Foundation.
 - Plex and Docker Desktop are optional separately downloaded proprietary software,
   not included in the signed payload. Stackarr facilitates their reviewed setup
   and account connections. Ask whether these optional integrations are acceptable
@@ -75,13 +79,15 @@ Component evidence: [LICENSE-NOTES](LICENSE-NOTES.md),
 2. Merge the reviewed public policy and integration preparation; keep signing
    disabled. Link the policy from the README and future release notes. Do not
    edit the historical 0.1.0 release to imply it is signed.
-3. Attach or link a current GitHub-built unsigned launcher sample and its exact
-   source revision. The installer rehearsal artifact contains **reports only**;
-   its synthetic Docker payload is not an end-user installer sample.
+3. Attach or link the [complete hosted build](HOSTED-PACKAGE.md), its unsigned
+   installer/ZIP, exact source revision and verification report. Download the
+   samples before their seven-day Actions retention expires. The separate
+   installer rehearsal artifact contains **reports only**; its synthetic Docker
+   payload is not an end-user installer sample.
 4. Submit the disclosures above and wait for eligibility feedback. This packet
    prepares the answers; it does not submit the application or accept terms.
-5. Complete [onboarding](SIGNPATH-INTEGRATION.md) only after acceptance. Resolve
-   the full-package hosted-build requirement before requesting installer signing.
+5. Complete [onboarding](SIGNPATH-INTEGRATION.md) only after acceptance. A successful
+   unsigned hosted package build does not establish SignPath approval or trust.
 
 References checked during preparation:
 [Foundation requirements](https://signpath.org/terms),
