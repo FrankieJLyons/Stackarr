@@ -16,6 +16,9 @@
 AppId={{21EBF1CE-1719-43D5-BE53-534A83C75B28}
 AppName=Stackarr
 AppVersion={#AppVersion}
+VersionInfoProductName=Stackarr
+VersionInfoProductVersion={#AppVersion}
+VersionInfoVersion={#AppVersion}
 AppPublisher=Stackarr contributors
 AppPublisherURL=https://github.com/FrankieJLyons/Stackarr
 DefaultDirName={localappdata}\Programs\Stackarr
@@ -40,6 +43,11 @@ WizardStyle=modern
 #ifdef SignedBuild
 SignTool=publisher
 SignedUninstaller=yes
+#endif
+#ifdef ExternalSigningDir
+; Two-pass cloud signing: export the exact uninstaller, then embed its signature.
+SignedUninstaller=yes
+SignedUninstallerDir={#ExternalSigningDir}
 #endif
 
 [Files]

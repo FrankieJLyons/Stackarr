@@ -8,6 +8,8 @@
   and uninstall preservation of settings, Docker apps, media and untracked files.
 - Added publisher-signature/timestamp checks and explicit unsigned artifact names;
   signed builds require a provisioned publisher identity and cannot fall back silently.
+- Prepared a SignPath application, code signing policy and disabled GitHub signing
+  integration, including launcher/uninstaller/installer handoffs and PE metadata.
 - Added hosted Windows installation/registration/removal acceptance and readiness
   browser coverage. Startup before Windows sign-in remains unsupported.
 - Reconciled the roadmap and added a released-package fresh-user walkthrough.

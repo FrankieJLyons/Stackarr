@@ -1,6 +1,11 @@
 name: Windows launcher preview
 on:
   workflow_dispatch:
+    inputs:
+      sign:
+        description: Request SignPath signing after approved onboarding (main only)
+        type: boolean
+        default: false
   push:
     branches: [main, stackarr/portable-core]
     paths:
@@ -15,6 +20,7 @@ on:
       - 'LICENSE'
 permissions:
   contents: read
+  actions: read
 jobs:
   browser:
     uses: ./.github/workflows/browser-check.yml
@@ -65,3 +71,10 @@ jobs:
             dist/stackarr-*-source.zip.sha256
             LICENSE
           retention-days: 7
+  sign:
+    if: github.event_name == 'workflow_dispatch' && inputs.sign && github.repository == 'FrankieJLyons/Stackarr' && github.ref == 'refs/heads/main'
+    needs: package
+    uses: ./.github/workflows/signpath.yml
+    with:
+      artifact-name: unsigned-windows-launcher-preview
+      kind: launcher

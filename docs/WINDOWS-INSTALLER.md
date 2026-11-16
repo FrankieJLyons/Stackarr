@@ -56,6 +56,10 @@ candidate until separate release acceptance is complete.
 
 ## Signing gate
 
+SignPath is the proposed service. The [application packet](SIGNPATH-APPLICATION.md)
+and [disabled GitHub integration](SIGNPATH-INTEGRATION.md) are prepared separately
+from the certificate-store builder below. No provider approval is claimed.
+
 The publisher must provision a publicly trusted code-signing identity. No signing
 identity is configured by these changes. The builder can use Windows SDK SignTool
 with a selected certificate already present in the publisher's certificate store;
