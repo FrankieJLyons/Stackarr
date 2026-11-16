@@ -59,7 +59,7 @@ def accept(original, signed, thumbprint):
     signature(signed, thumbprint)
 
 
-def metadata(path):
+def metadata(path, *, inno=False):
     response = subprocess.run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
          "$v=[System.Diagnostics.FileVersionInfo]::GetVersionInfo($env:STACKARR_SIGNATURE_FILE); "
@@ -67,7 +67,11 @@ def metadata(path):
         env=os.environ | {"STACKARR_SIGNATURE_FILE": str(path)}, capture_output=True, text=True,
         timeout=30, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
     value = json.loads(response.stdout)
-    if value != {"product": "Stackarr", "version": __version__}:
+    # Inno 6 uses fixed, space-padded resource fields (60/50 characters).
+    # Match those exact bytes in SignPath too; do not permit arbitrary suffixes.
+    expected = {"product": "Stackarr".ljust(60) if inno else "Stackarr",
+                "version": __version__.ljust(50) if inno else __version__}
+    if value != expected:
         raise ValueError("The PE product/version does not match this Stackarr source revision: " + repr(value))
 
 
@@ -117,7 +121,7 @@ def export_uninstaller(work, compiler):
     if (result.returncode == 0 or len(files) != 1 or not files[0].name.startswith("uninst-")
             or files[0].suffix != ".e32" or list((work / "compiled").glob("*.exe"))):
         raise ValueError("Inno did not export exactly one uninstaller for external signing.\n" + result.stdout + result.stderr)
-    metadata(files[0])
+    metadata(files[0], inno=True)
     request = work / "request-uninstaller"
     request.mkdir()
     shutil.copyfile(files[0], request / "StackarrUninstaller.exe")
@@ -187,7 +191,7 @@ def receive(work, returned, component, thumbprint, compiler=None):
         shutil.copyfile(signed, cache)
         subprocess.run(compile_command(work, compiler), check=True, timeout=900)
         artifact = work / "compiled" / f"Stackarr-{__version__}-Windows-x64-Setup.exe"
-        metadata(artifact)
+        metadata(artifact, inno=True)
         request = work / "request-installer"
         request.mkdir()
         shutil.copyfile(artifact, request / "StackarrSetup.exe")

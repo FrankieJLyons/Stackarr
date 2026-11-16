@@ -59,7 +59,7 @@ jobs:
           $source = if ($env:KIND -eq 'launcher') { 'incoming/dist' } else { 'incoming' }
           python -m tools.signpath_candidate prepare --input $source --kind $env:KIND --revision $env:GITHUB_SHA --work build/signpath
           if ($LASTEXITCODE -ne 0) { throw 'Signing input validation failed.' }
-          python -c "from stackarr import __version__; print('version=' + __version__)" >> $env:GITHUB_OUTPUT
+          python -c "import json; from stackarr import __version__; print('version=' + __version__); print('inno_version=' + json.dumps(__version__.ljust(50)))" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         id: launcher
         with:
@@ -109,7 +109,7 @@ jobs:
           wait-for-completion-timeout-in-seconds: 1800
           output-artifact-directory: build/returned-uninstaller
           parameters: |
-            version: ${{ toJSON(steps.version.outputs.version) }}
+            version: ${{ steps.version.outputs.inno_version }}
       - name: Verify and embed signed uninstaller
         if: inputs.kind == 'package'
         shell: pwsh
@@ -139,7 +139,7 @@ jobs:
           wait-for-completion-timeout-in-seconds: 1800
           output-artifact-directory: build/returned-installer
           parameters: |
-            version: ${{ toJSON(steps.version.outputs.version) }}
+            version: ${{ steps.version.outputs.inno_version }}
       - name: Verify installer and write final checksums
         if: inputs.kind == 'package'
         shell: pwsh

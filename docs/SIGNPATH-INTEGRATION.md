@@ -49,6 +49,12 @@ the run. There is no fallback to an unsigned artifact labelled signed.
    allow one named PE target and constrain product/version. Verify the templates
    against the account's live XML schema and approved samples. These files are
    preparation templates, not evidence of live service validation.
+   Inno's installer/uninstaller resources use a 60-character product name and
+   50-character version, padded with spaces. Those two XML files preserve the
+   exact product-name padding; their workflow requests pass the exact padded
+   version as a JSON string. The launcher uses unpadded metadata. Do not replace
+   these checks with wildcard suffixes. Verify the service's handling of padding
+   with the actual samples during onboarding.
 4. Create GitHub environment `signpath-production`, restricted to `main`. Configure
    owner review and disable administrator bypass where available. A sole owner
    may need to approve their own environment deployment; SignPath's separate
