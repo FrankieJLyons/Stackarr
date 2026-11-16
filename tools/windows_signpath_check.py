@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 from stackarr import __version__
@@ -19,7 +20,9 @@ from tools.signpath_candidate import digest, prepare, receive, save
 
 def powershell(script, **env):
     result = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
-                            env=os.environ | env, check=True, capture_output=True, text=True, timeout=90)
+                            env=os.environ | env, capture_output=True, text=True, timeout=90)
+    if result.returncode:
+        raise RuntimeError("Hosted signing rehearsal PowerShell failed: " + result.stderr)
     return result.stdout.strip()
 
 
@@ -34,7 +37,7 @@ def run():
         "$ErrorActionPreference='Stop'; "
         "$c=New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=Stackarr disposable signing test' "
         r"-CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1); "
-        "$store=New-Object System.Security.Cryptography.X509Certificates.X509Store('Root','CurrentUser'); "
+        "$store=New-Object System.Security.Cryptography.X509Certificates.X509Store('Root','LocalMachine'); "
         "$store.Open('ReadWrite'); $store.Add($c); $store.Close(); $c.Thumbprint")
     results = {}
     try:
@@ -83,12 +86,15 @@ def run():
             signature(target / "StackarrPreview.exe", thumbprint)
             results["installed_launcher_and_uninstaller_signed"] = True
             subprocess.run([str(uninstaller), "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART"], check=True, timeout=180)
+            deadline = time.monotonic() + 10
+            while target.exists() and time.monotonic() < deadline:
+                time.sleep(.1)  # Inno's self-delete helper can outlive the uninstaller process.
             assert not target.exists() and not runtime.exists()
             results["no_runtime_created"] = True
     finally:
         powershell(
-            "$ErrorActionPreference='Stop'; foreach ($location in @('My','Root')) { "
-            r"$path='Cert:\CurrentUser\' + $location + '\' + $env:TEST_CERTIFICATE; "
+            r"$ErrorActionPreference='Stop'; foreach ($location in @('CurrentUser\My','LocalMachine\Root')) { "
+            r"$path='Cert:\' + $location + '\' + $env:TEST_CERTIFICATE; "
             "if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force } }",
             TEST_CERTIFICATE=thumbprint)
     Path("test-results").mkdir(exist_ok=True)

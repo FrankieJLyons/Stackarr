@@ -81,12 +81,14 @@ def prepare(source, work, kind, revision):
         raise ValueError("Choose a supported artifact and exact source revision.")
     if kind == "package":
         provenance = package(source)
-        if provenance.get("source_dirty") is not False:
+        if provenance.get("source_dirty") is not False or provenance.get("alpha_test"):
             raise ValueError("A clean source checkout is required for signing.")
     else:
         provenance = json.loads((source / "build-metadata.json").read_text(encoding="utf-8-sig"))
     if provenance.get("source_revision") != revision:
         raise ValueError("The artifact and signing workflow source revisions differ.")
+    if kind == "launcher" and provenance.get("artifacts_sha256", {}).get("StackarrPreview.exe") != digest(source / "StackarrPreview.exe"):
+        raise ValueError("The launcher does not match its build receipt.")
     metadata(source / "StackarrPreview.exe")
     work.mkdir(parents=True)  # No reuse of partially signed state from an earlier request.
     if kind == "package":
@@ -168,6 +170,13 @@ def receive(work, returned, component, thumbprint, compiler=None):
             manifest = json.loads(path.read_text())
             manifest["files"]["StackarrPreview.exe"] = digest(signed)
             manifest["signed"] = True
+            readme = work / "payload/README.txt"
+            guide = readme.read_text(encoding="utf-8")
+            guide = guide.replace("The launcher is unsigned.", "The launcher is signed.")
+            guide = guide.replace("This unsigned public beta", "This signed public beta candidate")
+            readme.write_text("SIGNING CANDIDATE: launcher signature verified; public release acceptance remains pending.\n\n" + guide,
+                              encoding="utf-8")
+            manifest["files"]["README.txt"] = digest(readme)
             save(path, manifest)
             package(work / "payload")
             state["uninstaller_cache_name"] = export_uninstaller(work, compiler)

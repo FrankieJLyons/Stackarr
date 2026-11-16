@@ -22,7 +22,7 @@ This is separate from the signing adapter and remains a 0.1.1 release gate.
 Package mode performs three requests in order:
 
 1. Sign the launcher and verify its publisher, timestamp and unchanged executable
-   content. Update only its manifest hash and signed metadata before packaging.
+   content. Update its manifest hash, signing notice and signed metadata before packaging.
 2. Run Inno Setup's external-signing first pass. Submit the generated uninstaller
    under the fixed request name `StackarrUninstaller.exe`, verify the result, and
    restore it to the compiler's exact cache filename.

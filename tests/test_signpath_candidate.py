@@ -67,8 +67,9 @@ def test_wrong_revision_creates_no_signing_workspace(tmp_path):
 def test_launcher_receipt_describes_verified_bytes_only(tmp_path, monkeypatch):
     source = tmp_path / "source"
     source.mkdir()
-    (source / "build-metadata.json").write_text(json.dumps({"source_revision": "a" * 40}))
     (source / "StackarrPreview.exe").write_bytes(binary())
+    (source / "build-metadata.json").write_text(json.dumps({"source_revision": "a" * 40,
+        "artifacts_sha256": {"StackarrPreview.exe": signing.digest(source / "StackarrPreview.exe")}}))
     (source / "extra.exe").write_bytes(b"must not sign")
     monkeypatch.setattr(signing, "metadata", lambda path: None)
     monkeypatch.setattr(signing, "signature", lambda *args: None)
