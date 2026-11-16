@@ -19,6 +19,8 @@ from tools.signpath_candidate import digest, prepare, receive, save
 
 
 def powershell(script, **env):
+    script = ("Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1') "
+              "-ErrorAction Stop; " + script)
     result = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
                             env=os.environ | env, capture_output=True, text=True, timeout=90)
     if result.returncode:
