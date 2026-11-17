@@ -11,6 +11,7 @@ from pathlib import Path
 import httpx
 import uvicorn
 
+from . import __version__
 from .server import create_app
 
 
@@ -18,6 +19,7 @@ def run(report_path):
     checks = []
     passed = False
     guided_lan = False
+    signin_startup = False
     try:
         import tkinter
 
@@ -53,6 +55,12 @@ def run(report_path):
         from .first_run_server import assets
 
         assert callable(PackageStart.start) and (assets() / "readiness.js").is_file()
+        from .windows_startup import Registration, resume
+
+        assert callable(Registration.enable) and callable(Registration.disable) and callable(resume)
+        assert callable(PackageStart.startup)
+        signin_startup = True
+        checks.append("packaged opt-in sign-in startup and local review")
         checks.append("packaged integrated readiness, reviewed Docker setup and continuation")
         assert set(FILES) == {"plex", "seerr"} and callable(finish)
         checks.append("packaged account connection module available without Docker calls")
@@ -224,6 +232,7 @@ def run(report_path):
     except Exception:
         # Do not emit filesystem paths, exception payloads or credentials.
         checks.append("runtime smoke check failed")
-    Path(report_path).write_text(json.dumps({"passed": passed, "frozen": bool(getattr(sys, "frozen", False)), "guided_lan": guided_lan,
+    Path(report_path).write_text(json.dumps({"passed": passed, "version": __version__, "signin_startup": signin_startup,
+        "frozen": bool(getattr(sys, "frozen", False)), "guided_lan": guided_lan,
         "checks": checks, "scope": "temporary data and loopback; no app installation, Docker or reboot test"}, indent=2), encoding="utf-8")
     return 0 if passed else 1

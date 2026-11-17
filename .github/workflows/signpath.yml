@@ -1,0 +1,155 @@
+name: SignPath candidate signing
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: Unsigned artifact produced earlier in this same workflow run
+        required: true
+        type: string
+      kind:
+        description: launcher (Windows preview artifact) or package (complete package at artifact root)
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: signpath-production
+  cancel-in-progress: false
+jobs:
+  sign:
+    # No PR, fork, tag, alternate ref, arbitrary URL, or external workflow-run inputs.
+    if: github.repository == 'FrankieJLyons/Stackarr' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: windows-2025
+    environment: signpath-production
+    timeout-minutes: 120
+    steps:
+      - name: Require completed SignPath onboarding
+        shell: pwsh
+        env:
+          ENABLED: ${{ vars.SIGNPATH_ENABLED }}
+          ORGANIZATION: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          PROJECT: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          POLICY: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_SHA1 }}
+          TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          KIND: ${{ inputs.kind }}
+        run: |
+          if ($env:ENABLED -cne 'true') { throw 'Signing is disabled pending SignPath approval and configuration.' }
+          if ($env:KIND -notin @('launcher', 'package')) { throw 'Unsupported signing artifact kind.' }
+          if ($env:ORGANIZATION -notmatch '^[0-9a-fA-F-]{36}$' -or !$env:PROJECT -or !$env:POLICY -or !$env:TOKEN) { throw 'SignPath configuration is incomplete.' }
+          if ($env:THUMBPRINT -notmatch '^[0-9a-fA-F]{40}$') { throw 'Configure the approved publisher certificate thumbprint.' }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.lock
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: incoming
+      - name: Validate provenance and prepare launcher
+        id: version
+        shell: pwsh
+        env:
+          KIND: ${{ inputs.kind }}
+        run: |
+          $source = if ($env:KIND -eq 'launcher') { 'incoming/dist' } else { 'incoming' }
+          python -m tools.signpath_candidate prepare --input $source --kind $env:KIND --revision $env:GITHUB_SHA --work build/signpath
+          if ($LASTEXITCODE -ne 0) { throw 'Signing input validation failed.' }
+          python -c "import json; from stackarr import __version__; print('version=' + __version__); print('inno_version=' + json.dumps(__version__.ljust(50)))" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: launcher
+        with:
+          name: signpath-request-launcher
+          path: build/signpath/request-launcher/StackarrPreview.exe
+          if-no-files-found: error
+          retention-days: 7
+      - name: Request launcher signature (manual SignPath approval)
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: launcher
+          github-artifact-id: ${{ steps.launcher.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: build/returned-launcher
+          parameters: |
+            version: ${{ toJSON(steps.version.outputs.version) }}
+      - name: Verify launcher and export installer signing input
+        shell: pwsh
+        env:
+          THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_SHA1 }}
+        run: |
+          python -m tools.signpath_candidate receive --work build/signpath --returned build/returned-launcher --component launcher --thumbprint $env:THUMBPRINT --compiler "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: inputs.kind == 'package'
+        id: uninstaller
+        with:
+          name: signpath-request-uninstaller
+          path: build/signpath/request-uninstaller/StackarrUninstaller.exe
+          if-no-files-found: error
+          retention-days: 7
+      - name: Request uninstaller signature (manual SignPath approval)
+        if: inputs.kind == 'package'
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: uninstaller
+          github-artifact-id: ${{ steps.uninstaller.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: build/returned-uninstaller
+          parameters: |
+            version: ${{ steps.version.outputs.inno_version }}
+      - name: Verify and embed signed uninstaller
+        if: inputs.kind == 'package'
+        shell: pwsh
+        env:
+          THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_SHA1 }}
+        run: |
+          python -m tools.signpath_candidate receive --work build/signpath --returned build/returned-uninstaller --component uninstaller --thumbprint $env:THUMBPRINT --compiler "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: inputs.kind == 'package'
+        id: installer
+        with:
+          name: signpath-request-installer
+          path: build/signpath/request-installer/StackarrSetup.exe
+          if-no-files-found: error
+          retention-days: 7
+      - name: Request installer signature (manual SignPath approval)
+        if: inputs.kind == 'package'
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: installer
+          github-artifact-id: ${{ steps.installer.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: build/returned-installer
+          parameters: |
+            version: ${{ steps.version.outputs.inno_version }}
+      - name: Verify installer and write final checksums
+        if: inputs.kind == 'package'
+        shell: pwsh
+        env:
+          THUMBPRINT: ${{ vars.SIGNPATH_CERTIFICATE_SHA1 }}
+        run: |
+          python -m tools.signpath_candidate receive --work build/signpath --returned build/returned-installer --component installer --thumbprint $env:THUMBPRINT
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-signed-${{ inputs.kind }}-candidate
+          path: build/signpath/verified/*
+          if-no-files-found: error
+          retention-days: 7

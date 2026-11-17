@@ -1,0 +1,40 @@
+name: Windows installer acceptance
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/windows-installer-check.yml'
+      - 'platform/windows/**'
+      - 'stackarr/windows_startup.py'
+      - 'tools/build_windows_installer.py'
+      - 'tools/windows_installer_check.py'
+      - 'tools/signpath_candidate.py'
+      - 'tools/windows_signpath_check.py'
+      - 'tools/windows_version.py'
+      - '.github/workflows/signpath.yml'
+      - 'tests/test_signpath_candidate.py'
+      - 'tests/test_windows_startup.py'
+      - 'tests/test_windows_installer.py'
+permissions:
+  contents: read
+jobs:
+  installer:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.lock pytest pytest-asyncio pyinstaller==6.22.3
+      - run: python -m pytest -q tests/test_windows_startup.py tests/test_windows_installer.py tests/test_signpath_candidate.py
+      - run: python -m PyInstaller platform/windows/Stackarr.spec
+      - run: python -m tools.windows_signpath_check
+      - run: python -m tools.windows_installer_check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-installer-acceptance
+          path: |
+            test-results/windows-installer.json
+            test-results/signpath-rehearsal.json
+          retention-days: 7

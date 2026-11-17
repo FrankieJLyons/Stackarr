@@ -1,0 +1,9 @@
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters><parameter name="version" required="true" /></parameters>
+  <zip-file>
+    <!-- Inno's ProductName is padded to 60 characters; version parameter to 50. -->
+    <pe-file path="StackarrSetup.exe" product-name="Stackarr                                                    " product-version="${version}">
+      <authenticode-sign hash-algorithm="sha256" />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

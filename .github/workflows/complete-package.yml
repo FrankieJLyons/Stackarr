@@ -1,0 +1,149 @@
+name: Complete Docker package
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/complete-package.yml'
+      - '.github/workflows/windows-preview.yml'
+      - 'tools/hosted_package.py'
+      - 'tools/package_docker_preview.py'
+      - 'platform/docker/release-inputs.lock.json'
+      - 'Dockerfile'
+  workflow_dispatch:
+    inputs:
+      sign:
+        description: Request SignPath signing after approved onboarding (main only)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+jobs:
+  launcher:
+    uses: ./.github/workflows/windows-preview.yml
+    with:
+      sign: false
+  images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
+        with:
+          daemon-config: |
+            {"features":{"containerd-snapshotter":true}}
+      - run: python -m pip install -r requirements.lock
+      - run: python -m tools.hosted_package build --output build/hosted-images
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: hosted-image-bundle
+          path: |
+            build/hosted-images/stackarr-image.tar
+            build/hosted-images/image-build.json
+          compression-level: 1
+          retention-days: 1
+          if-no-files-found: error
+  assemble:
+    needs: [launcher, images]
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.lock
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: unsigned-windows-launcher-preview
+          path: build/launcher
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: hosted-image-bundle
+          path: build/images
+      - name: Assemble current launcher and reviewed images without Docker
+        shell: pwsh
+        run: |
+          $version = python -c "from stackarr import __version__; print(__version__)"
+          if ($LASTEXITCODE -ne 0) { throw 'Version lookup failed' }
+          "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+          python -m tools.hosted_package launcher --launcher build/launcher/dist
+          if ($LASTEXITCODE -ne 0) { throw 'Launcher provenance failed' }
+          python -m tools.package_docker_preview --image "stackarr:$version" --image-bundle build/images --controller-executable build/launcher/dist/StackarrPreview.exe --guided-lan --output "dist/Stackarr-$version-Windows-x64"
+          if ($LASTEXITCODE -ne 0) { throw 'Complete package assembly failed' }
+      - name: Build complete unsigned installer
+        shell: pwsh
+        run: |
+          python -m tools.build_windows_installer --package "dist/Stackarr-$env:PACKAGE_VERSION-Windows-x64" --version $env:PACKAGE_VERSION --compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe' --output dist/installers
+          if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unsigned-complete-docker-package
+          path: |
+            dist/*.zip
+            dist/*.zip.sha256
+            dist/installers/*
+            build/images/image-build.json
+            build/launcher/dist/build-metadata.json
+            build/launcher/dist/python-dependencies.cdx.json
+            build/launcher/dist/runtime-smoke.json
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: inputs.sign && github.repository == 'FrankieJLyons/Stackarr' && github.ref == 'refs/heads/main'
+        with:
+          name: unsigned-complete-signing-input
+          path: dist/Stackarr-${{ env.PACKAGE_VERSION }}-Windows-x64/*
+          compression-level: 1
+          retention-days: 1
+          if-no-files-found: error
+  verify:
+    needs: assemble
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
+        with:
+          daemon-config: |
+            {"features":{"containerd-snapshotter":true}}
+      - run: python -m pip install -r requirements.lock
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: unsigned-complete-docker-package
+          path: build/candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: hosted-image-bundle
+          path: build/images
+      - name: Load and smoke-test the finished portable download
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python -c 'from stackarr import __version__; print(__version__)')
+          python -m tools.hosted_package check --archive "build/candidate/dist/Stackarr-$version-Windows-x64.zip" --bundle build/images --output build/verified
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: complete-package-verification
+          path: build/verified/complete-package-check.json
+          retention-days: 7
+          if-no-files-found: error
+  sign:
+    if: inputs.sign && github.repository == 'FrankieJLyons/Stackarr' && github.ref == 'refs/heads/main'
+    needs: [assemble, verify]
+    uses: ./.github/workflows/signpath.yml
+    with:
+      artifact-name: unsigned-complete-signing-input
+      kind: package

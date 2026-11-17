@@ -1,13 +1,22 @@
 name: Windows launcher preview
 on:
+  workflow_call:
+    inputs:
+      sign:
+        type: boolean
+        default: false
   workflow_dispatch:
+    inputs:
+      sign:
+        description: Request SignPath signing after approved onboarding (main only)
+        type: boolean
+        default: false
   push:
     branches: [main, stackarr/portable-core]
     paths:
       - '.github/workflows/windows-preview.yml'
       - '.github/workflows/browser-check.yml'
-      - 'platform/windows/Stackarr.spec'
-      - 'platform/windows/launcher_entry.py'
+      - 'platform/windows/**'
       - 'stackarr/**'
       - 'requirements.lock'
       - 'pyproject.toml'
@@ -16,6 +25,7 @@ on:
       - 'LICENSE'
 permissions:
   contents: read
+  actions: read
 jobs:
   browser:
     uses: ./.github/workflows/browser-check.yml
@@ -42,8 +52,9 @@ jobs:
           if (-not $preview.WaitForExit(60000)) { $preview.Kill(); throw 'Packaged runtime smoke check timed out' }
           if ($preview.ExitCode -ne 0) { throw 'Packaged runtime smoke check failed' }
           $result = Get-Content -LiteralPath dist/runtime-smoke.json -Raw | ConvertFrom-Json
-          if (-not $result.passed -or -not $result.frozen -or -not $result.guided_lan) { throw 'Expected a passing packaged executable and bundled gateway check' }
+          if (-not $result.passed -or -not $result.frozen -or -not $result.guided_lan -or -not $result.signin_startup) { throw 'Expected a passing packaged executable, startup support and bundled gateway check' }
       - run: python -m tools.package_release
+      - run: python -m tools.windows_installer_check
       - run: python -m pip_audit --strict -r requirements.lock -f cyclonedx-json -o dist/python-dependencies.cdx.json
       - run: python -m tools.release_metadata
       - shell: pwsh
@@ -60,7 +71,15 @@ jobs:
             dist/python-dependencies.cdx.json
             dist/build-metadata.json
             dist/runtime-smoke.json
+            test-results/windows-installer.json
             dist/stackarr-*-source.zip
             dist/stackarr-*-source.zip.sha256
             LICENSE
           retention-days: 7
+  sign:
+    if: github.event_name == 'workflow_dispatch' && inputs.sign && github.repository == 'FrankieJLyons/Stackarr' && github.ref == 'refs/heads/main'
+    needs: package
+    uses: ./.github/workflows/signpath.yml
+    with:
+      artifact-name: unsigned-windows-launcher-preview
+      kind: launcher

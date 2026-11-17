@@ -12,6 +12,9 @@ if __name__ == "__main__":
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--choose-media-folder", help="Internal native folder dialog result file")
     mode.add_argument("--package-first-run", action="store_true", help="Open readiness and reviewed Docker setup for this package")
+    mode.add_argument("--startup-settings", help="Review optional startup after Windows sign-in for this saved installation")
+    mode.add_argument("--startup-resume", help="Quietly resume an explicitly registered installation after sign-in")
+    mode.add_argument("--startup-disable", help="Remove only this installation's unchanged sign-in registration")
     mode.add_argument("--runtime-report", help="Write a read-only Docker check to a new report file, without opening setup")
     mode.add_argument("--controller-enroll", help="Prepare a private controller enrollment directory")
     mode.add_argument("--controller-serve", help="Run the scoped controller from its enrollment directory")
@@ -47,6 +50,11 @@ if __name__ == "__main__":
     parser.add_argument("--dashboard-port", type=int, default=28000)
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args()
+    if args.startup_settings or args.startup_resume or args.startup_disable:
+        from stackarr.windows_startup import command
+
+        mode = "settings" if args.startup_settings else "resume" if args.startup_resume else "disable"
+        raise SystemExit(command(mode, args.startup_settings or args.startup_resume or args.startup_disable))
     if args.lan_setup:
         import hashlib
         from pathlib import Path

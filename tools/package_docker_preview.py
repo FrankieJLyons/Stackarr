@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from stackarr import __version__
 from stackarr.bundled_images import catalog as bundled_catalog
 from stackarr.bundled_images import verify as verify_bundled
 from stackarr.docker_runtime import executable
@@ -24,18 +25,36 @@ def main():
     parser.add_argument("--image", required=True)
     parser.add_argument("--output", type=Path, required=True, help="New empty output directory")
     parser.add_argument("--controller-executable", type=Path, default=Path("dist/StackarrPreview.exe"))
+    parser.add_argument("--image-bundle", type=Path, help="Verified hosted image export; assembly makes no Docker calls")
     parser.add_argument("--alpha-test", action="store_true", help="Portable state, a new test-media folder and a short alpha walkthrough")
     parser.add_argument("--guided-lan", action="store_true", help="Require a self-tested launcher with the pinned gateway bundled")
+    parser.add_argument("--signer-thumbprint", help="Require a valid timestamped launcher signature from this publisher certificate")
     args = parser.parse_args()
     root = Path.cwd()
-    if args.guided_lan:
-        with tempfile.TemporaryDirectory(prefix="stackarr-lan-package-") as temporary:
-            report = Path(temporary) / "selftest.json"
-            result = subprocess.run([str(args.controller_executable.resolve()), "--self-test-report", str(report)],
-                                    creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
-            value = json.loads(report.read_text()) if report.is_file() else {}
-            if result.returncode or not value.get("passed") or not value.get("guided_lan"):
-                raise SystemExit("Guided LAN packaging requires the tested launcher and pinned bundled Caddy.")
+    receipt = None
+    if args.image_bundle:
+        from tools.hosted_package import revision, validate_bundle, validate_launcher
+
+        source_revision = revision()
+        validate_launcher(args.controller_executable.resolve(), source_revision)
+        receipt = validate_bundle(args.image_bundle, source_revision, args.image)
+    if args.signer_thumbprint:
+        import re
+
+        from tools.build_windows_installer import signature
+
+        if not re.fullmatch(r"[a-fA-F0-9]{40}", args.signer_thumbprint):
+            raise SystemExit("Choose the publisher certificate's SHA-1 thumbprint.")
+        signature(args.controller_executable.resolve(), args.signer_thumbprint)
+    with tempfile.TemporaryDirectory(prefix="stackarr-package-check-") as temporary:
+        report = Path(temporary) / "selftest.json"
+        result = subprocess.run([str(args.controller_executable.resolve()), "--self-test-report", str(report)],
+                                creationflags=subprocess.CREATE_NO_WINDOW, timeout=120)
+        value = json.loads(report.read_text(encoding="utf-8")) if report.is_file() else {}
+        if (result.returncode or not value.get("passed") or not value.get("frozen")
+                or value.get("version") != __version__ or not value.get("signin_startup")
+                or (args.guided_lan and not value.get("guided_lan"))):
+            raise SystemExit("Packaging requires the matching tested launcher, startup support and any selected bundled gateway.")
     output = args.output.resolve()
     if not output.is_relative_to(root.resolve()) or output.exists():
         raise SystemExit("Choose a new output directory inside this workspace.")
@@ -150,7 +169,7 @@ def main():
     # Keep the first-run instructions short; retain detailed operations separately.
     technical_guide = (output / "README.txt").read_text(encoding="utf-8")
     (output / "README.txt").write_text(
-        "STACKARR 0.1.0 - WINDOWS PUBLIC BETA\n\n"
+        f"STACKARR {__version__} - WINDOWS PUBLIC BETA\n\n"
         "Start here\n"
         "1. Extract this complete ZIP into its own folder. Keep the files together.\n"
         "2. Double-click Start Stackarr.cmd. Choose Install apps on this computer.\n"
@@ -179,36 +198,42 @@ def main():
         "Configured apps open in the blue Media Stack control room. Add app installs or connects\n"
         "another app; Restart on a managed app card checks its state before your review.\n"
         "Discover opens browsing and requests. Setup, Apps and Backups remain one click away.\n\n"
-        "This is an unsigned public beta. Real-account import-to-playback, a clean Windows\n"
+        f"This is a public beta. The launcher is {'signed' if args.signer_thumbprint else 'unsigned'}. Real-account import-to-playback, a clean Windows\n"
         "install, TV/phone access and restart behavior still require acceptance testing.\n",
         encoding="utf-8")
     with (output / "README.txt").open("a", encoding="utf-8") as guide:
         if args.guided_lan:
             guide.write("\nHOME NETWORK & RECOVERY\n\nReopen Start Stackarr.cmd and choose Home network & recovery. Prepare the home\nconnection and prepare secure access. Review activation, start the gateway, then\ncopy its address. Download the public certificate and trust it once per device.\nChoose your device in the helper for instructions. An optional local computer name\ncan be used if your devices already resolve it. Keep the local recovery address. Preparation keeps current apps and host network settings\nunchanged. The helper includes reviewed activation, gateway restart and LAN\nrollback. Certificate trust, firewall access and signed-out Windows startup still\nneed acceptance on a spare host; no system settings are installed automatically.\n\n")
         guide.write("\n\nADVANCED REFERENCE\n\n" + technical_guide)
-    docker = executable()
-    bundled = bundled_catalog()
-    def call(arguments):
-        return subprocess.check_output([docker, *arguments], text=True)
-    for row in bundled.values():
-        verify_bundled(call, row["image"])
-    # Docker save by digest alone loses the repository association on load.
-    # Save the reviewed tag too, after binding it to the exact immutable image.
-    app_tags = []
-    for row in bundled.values():
-        tag = row["image"].split("@", 1)[0] + ":" + row["version"]
-        if call(["image", "inspect", tag, "--format", "{{.Id}}"]).strip() != call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip():
-            raise SystemExit("The packaged app tag does not match its reviewed immutable image.")
-        app_tags.append(tag)
-    subprocess.run([docker, "save", "--output", str(output / "stackarr-image.tar"), args.image,
-                    *app_tags], check=True, timeout=300)
-    image_id = subprocess.check_output([docker, "image", "inspect", args.image, "--format", "{{.Id}}"], text=True).strip()
+    if args.image_bundle:
+        shutil.copyfile(args.image_bundle / "stackarr-image.tar", output / "stackarr-image.tar")
+        image_id, bundled_images = receipt["image_id"], receipt["bundled_app_images"]
+    else:
+        docker = executable()
+        bundled = bundled_catalog()
+
+        def call(arguments):
+            return subprocess.check_output([docker, *arguments], text=True)
+
+        app_tags, bundled_images = [], []
+        for key, row in bundled.items():
+            verify_bundled(call, row["image"])
+            tag = row["image"].split("@", 1)[0] + ":" + row["version"]
+            app_id = call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip()
+            if call(["image", "inspect", tag, "--format", "{{.Id}}"]).strip() != app_id:
+                raise SystemExit("The packaged app tag does not match its reviewed immutable image.")
+            app_tags.append(tag)
+            bundled_images.append({"app": key, "image": row["image"], "image_id": app_id})
+        # Saving the reviewed tag preserves repository association on load.
+        subprocess.run([docker, "save", "--output", str(output / "stackarr-image.tar"), args.image,
+                        *app_tags], check=True, timeout=300)
+        image_id = call(["image", "inspect", args.image, "--format", "{{.Id}}"]).strip()
     manifest = {"schema": 1, "image": args.image, "image_id": image_id,
-                "bundled_app_images": [{"app": key, "image": row["image"], "image_id": call(["image", "inspect", row["image"], "--format", "{{.Id}}"]).strip()} for key, row in bundled.items()],
-                "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1,
+                "bundled_app_images": bundled_images,
+                "release": output.name, "maintenance": {"protocol": 1, "state_schema": 1}, "runtime_repair": 1, "lan_access": 1, "signin_startup": 1,
                 "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                 "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()),
-                "signed": False, "files": {path.name: digest(path) for path in output.iterdir() if path.is_file()},
+                "signed": bool(args.signer_thumbprint), "files": {path.name: digest(path) for path in output.iterdir() if path.is_file()},
                 "scope": "Docker Desktop preview, no runtime data, enrollment, credentials or media included"}
     if args.alpha_test:
         manifest["alpha_test"] = {"version": "0.1", "state": "alpha-data/docker", "media": "alpha-data/media",

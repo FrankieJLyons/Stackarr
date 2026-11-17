@@ -3,9 +3,11 @@ from pathlib import Path
 import hashlib
 import json
 import os
+import runpy
 from PyInstaller.utils.hooks import collect_submodules
 
 root = Path(SPECPATH).resolve().parents[1]
+version_resource = runpy.run_path(str(root / "tools/windows_version.py"))["write"](root / "build/windows-version.txt")
 caddy_data = []
 if os.environ.get("STACKARR_CADDY_BUNDLE"):
     caddy_root = Path(os.environ["STACKARR_CADDY_BUNDLE"]).resolve()
@@ -30,4 +32,4 @@ a = Analysis(
 )
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, a.binaries, a.datas, [], name="StackarrPreview",
-          debug=False, strip=False, upx=False, console=False)
+          debug=False, strip=False, upx=False, console=False, version=version_resource)

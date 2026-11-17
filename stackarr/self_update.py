@@ -288,11 +288,13 @@ try { if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [C
         if set(service.get("labels", {})) - {"io.stackarr.release"}:
             raise DeploymentError("Stackarr's release labels changed.")
 
-    def adopt(self):
+    def adopt(self, *, port=None, controller_port=None):
         manifest = package(self.package_root)
         context = self.docker.context()
-        controller_port = int(os.environ.get("STACKARR_CONTROLLER_PORT", "28010"))
-        port = int(os.environ.get("STACKARR_PORT", "28000"))
+        controller_port = int(os.environ.get("STACKARR_CONTROLLER_PORT", "28010")) if controller_port is None else controller_port
+        port = int(os.environ.get("STACKARR_PORT", "28000")) if port is None else port
+        if any(type(value) is not int or not 1 <= value <= 65535 for value in (port, controller_port)):
+            raise DeploymentError("Stackarr's saved ports need inspection.")
         plan = read(self.root / "compose.json")
         self.recipe(plan, self.root, port, controller_port)
         identity, info = self.dashboard(port)

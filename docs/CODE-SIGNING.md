@@ -2,9 +2,9 @@
 
 ## Current status
 
-SignPath application preparation is in progress. No application approval,
-certificate or SignPath sponsorship is claimed. The public 0.1.0 release is
-unsigned. Signing integration for 0.1.1 is disabled until onboarding is complete.
+No publicly trusted signing identity is configured. The public 0.1.0 release and
+0.1.1 candidate are unsigned. The prepared SignPath integration remains disabled;
+no application approval, certificate or SignPath sponsorship is claimed.
 
 If the Foundation approves the project, the attribution will be:
 Free code signing provided by [SignPath.io](https://signpath.io), certificate by

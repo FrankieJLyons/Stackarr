@@ -24,6 +24,14 @@
   const cancelDownload = document.getElementById("cancel-download");
   const continueStackarr = document.getElementById("continue-stackarr");
   const openNetwork = document.getElementById("open-network");
+  const openStartup = document.getElementById("open-startup");
+  openStartup.addEventListener("click", async () => {
+    if (busy || closed || setupBusy || handoffBusy) return;
+    openStartup.disabled = true;
+    try { next.textContent = (await request("/api/stackarr/startup")).message; }
+    catch (error) { errorMessage(error.message); }
+    finally { openStartup.disabled = false; }
+  });
   openNetwork.addEventListener("click", async () => {
     if (busy || closed || setupBusy || handoffBusy) return;
     openNetwork.disabled = true;
@@ -77,6 +85,7 @@
     try {
       const report = await request("/api/check");
       document.getElementById("network-recovery").hidden = !report.integrated;
+      document.getElementById("startup-settings").hidden = !report.integrated;
       title.textContent = report.title;
       next.textContent = report.next_step;
       badge.textContent = report.state === "ready" ? "READY FOR SETUP" : "NEXT STEPS";
@@ -196,6 +205,9 @@
     approveDocker.disabled = true;
     try {
       await request("/api/docker/start", {review_id:review.review_id, previous_closed:previousClosed.checked});
+      // A fast installer can finish before the first status response. Remember
+      // the accepted start so its terminal result always refreshes readiness.
+      setupBusy = true;
       reviewDialog.close();
       review = null;
       await pollSetup();

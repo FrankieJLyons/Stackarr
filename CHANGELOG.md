@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.1 — unreleased candidate
+
+- Added opt-in current-user startup after Windows sign-in, bounded Docker readiness
+  waiting, quiet saved-runtime resume and redacted failure status.
+- Added a per-user installer with Start menu shortcuts, explicit owned-path checks
+  and uninstall preservation of settings, Docker apps, media and untracked files.
+- Added publisher-signature/timestamp checks and explicit unsigned artifact names;
+  signed builds require a provisioned publisher identity and cannot fall back silently.
+- Prepared a SignPath application, code signing policy and disabled GitHub signing
+  integration, including launcher/uninstaller/installer handoffs and PE metadata.
+- Added a hosted complete-package build with current launcher/dashboard, the
+  unchanged pinned Seerr dependency, real unsigned installer, revision/hash checks
+  and fresh-runner image loading and isolated service smoke checks.
+- Added hosted Windows installation/registration/removal acceptance and readiness
+  browser coverage. Startup before Windows sign-in remains unsupported.
+- Reconciled the roadmap and added a released-package fresh-user walkthrough.
+
+This candidate is not yet a public release. The owner selected unsigned beta
+testing on 2026-11-17. Clean Windows 11, actual sign-in/reboot and exact-package
+Docker Desktop startup remain acceptance gates. Publicly trusted signing is
+deferred; any future signed release must pass publisher-signature validation.
+
 ## 0.1.0 — public beta
 
 - Added the media control room, app catalog, responsive setup checklist and appearance preferences.

@@ -64,6 +64,18 @@ class PackageStart:
                          creationflags=subprocess.CREATE_NO_WINDOW)
         return {"opened": True, "message": "Home network & recovery is opening in a separate local window. Your app settings stay in place."}
 
+    def startup(self):
+        from .self_update import package
+
+        manifest = package(self.package_root)
+        if manifest.get("signin_startup") != 1:
+            raise SetupError("This package does not support sign-in startup.")
+        subprocess.Popen([str(self.package_root / "StackarrPreview.exe"), "--startup-settings", str(self.state_root)],
+                         env=os.environ | {"PYINSTALLER_RESET_ENVIRONMENT": "1"},
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         creationflags=subprocess.CREATE_NO_WINDOW)
+        return {"opened": True, "message": "Review startup in the local Stackarr window. Nothing is enabled until you choose Enable at sign-in."}
+
     def start(self, mode, report):
         if mode not in {"install", "connect"} or report.get("mode") != mode or report.get("state") != "ready":
             raise SetupError("Check readiness again before continuing to Stackarr.")
