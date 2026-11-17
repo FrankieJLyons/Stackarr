@@ -17,8 +17,10 @@
   browser coverage. Startup before Windows sign-in remains unsupported.
 - Reconciled the roadmap and added a released-package fresh-user walkthrough.
 
-This candidate is not yet a public release. Clean Windows 11, actual sign-in/reboot,
-exact-package Docker startup and publisher-signing acceptance remain release gates.
+This candidate is not yet a public release. The owner selected unsigned beta
+testing on 2026-11-17. Clean Windows 11, actual sign-in/reboot and exact-package
+Docker Desktop startup remain acceptance gates. Publicly trusted signing is
+deferred; any future signed release must pass publisher-signature validation.
 
 ## 0.1.0 — public beta
 

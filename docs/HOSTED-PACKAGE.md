@@ -56,7 +56,7 @@ storage. It checks dashboard health and the running Seerr version, then removes
 only those fixture containers.
 
 This proves assembly, import and isolated service startup. Windows 11 Docker
-Desktop onboarding, actual sign-in/reboot and the [fresh-user walkthrough](BETA-WALKTHROUGH.md)
+Desktop onboarding, actual sign-in/reboot and the [0.1.1 candidate walkthrough](BETA-0.1.1.md)
 remain release acceptance tasks.
 
 ## Optional signing

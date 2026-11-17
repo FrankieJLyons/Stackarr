@@ -23,10 +23,10 @@ This is a proposed maintenance release, not a published version or a delivery-da
 
 | Priority | Work | Current status | Required completion evidence |
 | --- | --- | --- | --- |
-| 1 | Fresh-user acceptance and fixes | Awaiting the released-package walkthrough | Complete [the walkthrough](BETA-WALKTHROUGH.md), record blockers and retest fixes on the candidate artifact. |
+| 1 | Fresh-user acceptance and fixes | Owner selected unsigned 0.1.1 testing on 2026-11-17 | Complete the [0.1.1 candidate checklist](BETA-0.1.1.md), record blockers and retest fixes on the candidate artifact. |
 | 2 | Reliable return after Windows sign-in | Implemented on the 0.1.1 candidate branch; physical acceptance pending | Opt-in, removable startup registration; bounded wait for Docker; quiet reuse of the existing installation; recovery from unavailable Docker; no unrelated startup changes. |
 | 3 | Conventional Windows installation | Candidate per-user installer and hosted acceptance; not released | Stable owned application/state locations, shortcuts, upgrade/rollback behavior, uninstall preservation and clean-Windows acceptance. |
-| 4 | Publicly trusted signing | Hosted package build passed; Foundation application declined on 2026-11-17 for insufficient adoption/visibility; signing disabled | Choose an eligible signing route or explicitly approve an unsigned beta release after acceptance. Retain signature checks for signed builds; any future signing identity must be validated on launcher, installer and embedded uninstaller. |
+| 4 | Publicly trusted signing | Deferred while the owner tests unsigned 0.1.1; Foundation application declined on 2026-11-17; signing disabled | Review acceptance before separately publishing the unsigned beta. Retain signature checks for any future signed builds; future provider onboarding remains separate work. |
 | 5 | Current documentation | Reconciled here | README, roadmap and release limits agree; historical evidence stays labeled. |
 
 Docker Desktop documents automatic start **at sign-in**. A sign-in startup feature must not be advertised as unattended boot before sign-in. The latter remains a separate runtime feasibility and physical acceptance gate. See [Docker settings](https://docs.docker.com/desktop/settings-and-maintenance/settings/) and the [Windows runtime lab](WINDOWS-RUNTIME-LAB.md).

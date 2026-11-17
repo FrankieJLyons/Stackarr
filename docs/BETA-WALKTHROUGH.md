@@ -1,5 +1,8 @@
 # Fresh-user beta walkthrough
 
+For the current unsigned installer candidate, use the
+[0.1.1 testing handoff](BETA-0.1.1.md). This worksheet records the released 0.1.0 experience.
+
 Use the public **0.1.0 Windows ZIP**, not a source checkout or a development build. This run checks the released experience. Fixes found during it belong in a later candidate; do not silently replace the 0.1.0 assets.
 
 ## Before starting

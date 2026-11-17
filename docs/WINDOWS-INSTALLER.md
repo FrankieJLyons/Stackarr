@@ -93,8 +93,10 @@ synthetic package, exercises real current-user registration, rejects an unrelate
 destination, repeats installation, and uninstalls while preserving sentinels and an
 unrelated startup entry. It never launches a Docker stack.
 
-Still required before publishing 0.1.1: exact candidate package startup with real
-Docker, clean Windows installation, real sign-out/sign-in and reboot, human native
-dialog checks, signed artifact validation with the chosen publisher, and the
-[fresh-user walkthrough](BETA-WALKTHROUGH.md). Hosted Server 2025 evidence is not
-Windows 11 recipient certification or before-sign-in support.
+The owner selected unsigned 0.1.1 testing on 2026-11-17. Follow the
+[candidate download and checklist](BETA-0.1.1.md). Still required before publication:
+exact candidate startup with Docker Desktop, clean Windows installation, actual
+sign-out/sign-in and reboot, human native dialogs and the fresh-user journey.
+Signed artifact validation applies to a future signed release, not this explicitly
+unsigned candidate. Hosted Server 2025 evidence is not Windows 11 recipient
+certification or before-sign-in support.
