@@ -2,9 +2,9 @@
 
 ## Current status
 
-SignPath application preparation is in progress. No application approval,
-certificate or SignPath sponsorship is claimed. The public 0.1.0 release is
-unsigned. Signing integration for 0.1.1 is disabled until onboarding is complete.
+No publicly trusted signing identity is configured. The public 0.1.0 release and
+0.1.1 candidate are unsigned. The prepared SignPath integration remains disabled;
+no application approval, certificate or SignPath sponsorship is claimed.
 
 If the Foundation approves the project, the attribution will be:
 Free code signing provided by [SignPath.io](https://signpath.io), certificate by
@@ -13,12 +13,13 @@ arrangement, not an existing service or endorsement.
 
 ## People and approval
 
-Proposed committer, reviewer and signing approver:
+Committer, reviewer and designated signing approver:
 [FrankieJLyons](https://github.com/FrankieJLyons), the repository owner.
 External contributions require maintainer review. Each signing request requires
 the owner's manual approval in SignPath after checking the source revision,
 workflow results and requested files. MFA is required for participating accounts;
-the owner must confirm it during onboarding. No automated approval is configured.
+GitHub MFA has been confirmed by the owner, and SignPath MFA must be enabled during
+onboarding. No automated approval is configured.
 
 ## Scope
 
@@ -62,5 +63,5 @@ indexers and other apps are governed by their respective operators' policies.
 This is not a claim that third-party software never sends telemetry.
 
 See [licensing and bundled components](LICENSE-NOTES.md),
-[installer behavior](WINDOWS-INSTALLER.md) and
+[candidate installer behavior](https://github.com/FrankieJLyons/Stackarr/blob/codex/windows-startup-installer/docs/WINDOWS-INSTALLER.md) and
 [security reporting](../SECURITY.md).

@@ -1,9 +1,16 @@
 # SignPath application packet
 
-Prepared for owner review; **not submitted**. Use the
-[SignPath Foundation application](https://signpath.org/apply) after completing the
-owner-only fields and confirming the eligibility questions below. Never put an
-API token, private key or personal identity document in this repository.
+**Submitted 2026-11-16; Foundation application declined 2026-11-17.** The owner
+shared the decision: the project does not yet have sufficient public visibility
+and adoption evidence for a Foundation certificate. Reapplication is welcome once
+that evidence develops. The decision did not establish acceptance of the remaining
+eligibility disclosures below. Signing remains disabled; no paid subscription has
+been selected or purchased.
+
+The following packet records the prepared answers and can support a future
+[application](https://signpath.org/apply). Contact details and the support email
+are not reproduced here. Never put an API token, private key or personal identity
+document in this repository.
 
 ## Project details to copy into the application
 
@@ -17,10 +24,10 @@ API token, private key or personal identity document in this repository.
 | Candidate | 0.1.1, per-user Windows installer and opt-in sign-in startup |
 | Maintainer account | https://github.com/FrankieJLyons |
 | Requested certificate | SignPath Foundation OSS certificate, subject to their approval |
-| Proposed roles | FrankieJLyons: committer, reviewer, signing approver |
-| Signing policy | `docs/CODE-SIGNING.md` (publish the reviewed policy before submission) |
+| Confirmed roles | FrankieJLyons: committer, reviewer, signing approver |
+| Signing policy | `docs/CODE-SIGNING.md`, published through PR #2 |
 | First name, last name and email | Owner enters directly in the private application form |
-| MFA / authority confirmation | Owner confirms directly; not verified by this preparation |
+| MFA / authority confirmation | Owner confirmed GitHub MFA and signing-approver role; SignPath MFA remains an onboarding requirement |
 
 Suggested project description:
 
@@ -63,7 +70,8 @@ Required **Reputation** answer, if the owner has no further public evidence:
 > understand that technical CI evidence is not a substitute for established
 > reputation, and request an eligibility assessment for an early public beta.
 
-Owner input needed before submission:
+Owner checklist for a future submission (contact details, roles, GitHub MFA and
+the required consent were confirmed for the 2026-11-16 submission):
 
 - Private first name, last name and email for the SignPath account; these can be
   entered directly in the form instead of shared in chat.
@@ -74,8 +82,8 @@ Owner input needed before submission:
 - Review and agreement to the Foundation Code of Conduct and required personal
   data storage/processing consent. Optional marketing consent stays unchecked.
 
-The form includes reCAPTCHA. The owner may need to complete it. This packet does
-not accept terms, transmit personal details, create an account or submit the form.
+The form includes reCAPTCHA. The owner may need to complete it. This packet
+is a record of preparation, not authorization for a new submission or new terms.
 The download field asks for a signing acknowledgement; explain the pending status
 and ask how they want it worded before approval, without implying 0.1.0 is signed.
 
@@ -116,20 +124,21 @@ Component evidence: [LICENSE-NOTES](LICENSE-NOTES.md),
 [`caddy.lock.json`](../stackarr/caddy.lock.json), and the Windows build's
 `python-dependencies.cdx.json`, `build-metadata.json`, and `runtime-smoke.json`.
 
-## Before submission
+## Before reapplying
 
 1. Owner reviews the description, role assignments and privacy statement and
    enters a private contact name/email. Confirm MFA for GitHub and SignPath.
-2. Merge the reviewed public policy and integration preparation; keep signing
-   disabled. Link the policy from the README and future release notes. Do not
+2. Keep the published policy and integration preparation accurate; keep signing
+   disabled. Retain the policy link in the README and future release notes. Do not
    edit the historical 0.1.0 release to imply it is signed.
 3. Attach or link the [complete hosted build](HOSTED-PACKAGE.md), its unsigned
    installer/ZIP, exact source revision and verification report. Download the
    samples before their seven-day Actions retention expires. The separate
    installer rehearsal artifact contains **reports only**; its synthetic Docker
    payload is not an end-user installer sample.
-4. Submit the disclosures above and wait for eligibility feedback. This packet
-   prepares the answers; it does not submit the application or accept terms.
+4. Add actual external adoption, independent references and sustained public
+   engagement before reapplying. Submit the disclosures above and await a new
+   eligibility decision. Do not manufacture reviews, stars or download statistics.
 5. Complete [onboarding](SIGNPATH-INTEGRATION.md) only after acceptance. A successful
    unsigned hosted package build does not establish SignPath approval or trust.
 

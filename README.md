@@ -23,7 +23,7 @@ Set up your home media server, connect your apps, and follow the journey from re
 
 [Getting started](#-download-and-start) · [What’s included](#-included-in-this-beta) · [Beta checklist](docs/BETA-0.1.0.md) · [Roadmap](docs/ROADMAP.md) · [Report a bug](https://github.com/FrankieJLyons/Stackarr/issues/new?template=bug_report.md)
 
-[Code signing policy](docs/CODE-SIGNING.md) · Signing application in preparation; current downloads are unsigned.
+[Code signing policy](docs/CODE-SIGNING.md) · Current downloads are unsigned; public signing is not configured.
 
 </div>
 

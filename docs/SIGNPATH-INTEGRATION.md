@@ -4,6 +4,13 @@ Status: prepared, disabled and not connected to a SignPath account. No API token
 production certificate, app installation or signing policy has been provisioned.
 Public 0.1.0 remains unsigned. This integration does not publish releases.
 
+The Foundation application submitted on 2026-11-16 was declined on 2026-11-17
+because public trust/adoption evidence is not yet sufficient. Approval is not
+pending. Preserve this integration for possible future onboarding, but do not
+enable it or assume a paid plan is suitable without confirming certificate
+eligibility, artifact-configuration support and signing-request quotas. No paid
+subscription has been selected. See the [application record](SIGNPATH-APPLICATION.md).
+
 ## What is wired
 
 The Windows launcher preview workflow has a manual `sign` input, default false.
